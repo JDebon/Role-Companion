@@ -70,3 +70,17 @@ pnpm --filter @rolecompanion/db studio         # open Drizzle Studio
 - Each test file calls `clearDb()` from `src/tests/setup.ts` in `beforeEach`
 - Tests are colocated in `src/tests/*.test.ts`
 - The test DB is seeded with SRD data before tests run (available for compendium queries)
+
+## Architecture Decisions
+
+| Decision | Chosen | Rationale |
+|----------|--------|-----------|
+| SRD data source | 5e-database 2014 (local seed) | No runtime dependency on external APIs; faster queries; freely extensible |
+| Additional content | open5e (optional seed) | Includes third-party OGL content (Kobold Press, etc.) |
+| Frontend | React 19 + TypeScript + Tailwind v4 | Type safety, good ecosystem |
+| Backend | Hono + TypeScript | Lightweight, fast, type-safe |
+| Database | PostgreSQL 17 + Drizzle ORM | JSON support for custom content, full-text search |
+| Monorepo | pnpm workspaces | Shared packages between web and api apps |
+| Custom content model | base_id (FK, nullable) + overrides (JSONB) | Clone SRD entities or create from scratch |
+| Auth | JWT (7-day) | Stateless, simple to implement across monorepo |
+| Migrations | Hand-authored SQL + SHA256 hash tracking | Full control; drizzle-kit skips manual migrations without snapshots |

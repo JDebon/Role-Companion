@@ -26,12 +26,12 @@
 
 > Core infrastructure: auth, data, characters, items. All done.
 
-| # | Feature | Spec | Priority | Status | Notes |
+| Task ID | Feature | Spec | Priority | Status | Description |
 |---|---------|------|----------|--------|-------|
-| 1 | Auth + Campaign Management | [SPEC-001](./SPEC-001-auth-campaign/SPEC-001-auth-campaign.md) | MUST | 🟢 Done | User registration, login, campaign create/join/manage, DM/Player roles |
-| 2 | SRD Compendium | [SPEC-002](./SPEC-002-srd-seeding/SPEC-002-srd-seeding.md) | MUST | 🟢 Done | 5e-database 2014 seeded locally; search spells, monsters, equipment, classes, races |
-| 3 | Character Sheet | [SPEC-003](./SPEC-003-character-sheet/SPEC-003-character-sheet.md) | MUST | 🟢 Done | Ability scores, HP, AC, skills, saving throws, proficiencies |
-| 4 | Inventory & Items | [SPEC-004](./SPEC-004-inventory-items/SPEC-004-inventory-items.md) | MUST | 🟢 Done | Item list, carry weight, currency (gp/sp/ep/cp), attunement, equipped toggle |
+| 001 | Auth + Campaign Management | [SPEC-001](./SPEC-001-auth-campaign/SPEC-001-auth-campaign.md) | MUST | 🟢 Done | User registration, login, campaign create/join/manage, DM/Player roles |
+| 002 | SRD Compendium | [SPEC-002](./SPEC-002-srd-seeding/SPEC-002-srd-seeding.md) | MUST | 🟢 Done | 5e-database 2014 seeded locally; search spells, monsters, equipment, classes, races |
+| 003 | Character Sheet | [SPEC-003](./SPEC-003-character-sheet/SPEC-003-character-sheet.md) | MUST | 🟢 Done | Ability scores, HP, AC, skills, saving throws, proficiencies |
+| 004 | Inventory & Items | [SPEC-004](./SPEC-004-inventory-items/SPEC-004-inventory-items.md) | MUST | 🟢 Done | Item list, carry weight, currency (gp/sp/ep/cp), attunement, equipped toggle |
 
 ---
 
@@ -39,12 +39,12 @@
 
 > Spells, combat, and DM tooling. All done except SPEC-008.
 
-| # | Feature | Spec | Priority | Status | Notes |
+| Task ID | Feature | Spec | Priority | Status | Description |
 |---|---------|------|----------|--------|-------|
-| 5 | Spell Management | [SPEC-005](./SPEC-005-spell-management/SPEC-005-spell-management.md) | MUST | 🟢 Done | Spell slots per level, spells known/prepared, concentration tracker |
-| 6 | Custom Content | [SPEC-006](./SPEC-006-custom-content/SPEC-006-custom-content.md) | MUST | 🟢 Done | Clone + override SRD entities or create from scratch; DM-only creation |
-| 7 | DM Tools — NPCs & Encounter Tracker | [SPEC-007](./SPEC-007-dm-tools/SPEC-007-dm-tools.md) | MUST | 🟢 Done | NPC tracker, monster stat blocks, HP tracking per encounter, initiative order |
-| 8 | Notes & Session Logs | [SPEC-008](./SPEC-008-notes-session-logs/SPEC-008-notes-session-logs.md) | MUST | 🟢 Done | Per-character private notes, shared session summaries, DM-selectively-revealed info |
+| 005 | Spell Management | [SPEC-005](./SPEC-005-spell-management/SPEC-005-spell-management.md) | MUST | 🟢 Done | Spell slots per level, spells known/prepared, concentration tracker |
+| 006 | Custom Content | [SPEC-006](./SPEC-006-custom-content/SPEC-006-custom-content.md) | MUST | 🟢 Done | Clone + override SRD entities or create from scratch; DM-only creation |
+| 007 | DM Tools — NPCs & Encounter Tracker | [SPEC-007](./SPEC-007-dm-tools/SPEC-007-dm-tools.md) | MUST | 🟢 Done | NPC tracker, monster stat blocks, HP tracking per encounter, initiative order |
+| 008 | Notes & Session Logs | [SPEC-008](./SPEC-008-notes-session-logs/SPEC-008-notes-session-logs.md) | MUST | ✅ Approved | Per-character private notes, shared session summaries, DM-selectively-revealed info |
 
 ---
 
@@ -52,13 +52,13 @@
 
 > Combat helpers and campaign organisation. Next up.
 
-| # | Feature | Spec | Priority | Status | Notes |
+| Task ID | Feature | Spec | Priority | Status | Description |
 |---|---------|------|----------|--------|-------|
-| 9 | Condition Tracker | SPEC-009 | SHOULD | 📋 Planned | Poisoned, stunned, incapacitated, etc. with duration tracking per combatant |
-| 10 | Death Saves Tracker | SPEC-010 | SHOULD | 📋 Planned | Success/fail tracking, auto-stabilize on 3 successes; integrates with combat tracker |
-| 11 | Rest Tracker | SPEC-011 | SHOULD | 📋 Planned | Short/long rest resource recovery: HP, spell slots, class features |
-| 12 | Quest / Plot Tracker | SPEC-012 | SHOULD | 📋 Planned | Active quests, objectives, completion status; DM-managed, visible to players |
-| 13 | World Notes | SPEC-013 | SHOULD | 📋 Planned | Locations, factions, lore; DM + selectively shared visibility |
+| 009 | Condition Tracker | SPEC-009 | MUST | 📋 Planned | Poisoned, stunned, incapacitated, etc. with duration tracking per combatant |
+| 010 | Death Saves Tracker | SPEC-010 | MUST | 📋 Planned | Success/fail tracking, auto-stabilize on 3 successes; integrates with combat tracker |
+| 011 | Rest Tracker | SPEC-011 | SHOULD | 📋 Planned | Short/long rest resource recovery: HP, spell slots, class features |
+| 014 | Spell Slots Tracker | SPEC-012 | MUST | 📋 Planned | Amount of Spell Slots the character has by level; integrate an optional feature to change the display to Spell Points rule if needed |
+| 020 | Reveal to Player | SPEC-013 | MUST | 📋 Planned | The DM notes must now have a button or option to reveal a note only for a selected player or players, and not only a button to reveal for all the party |
 
 ---
 
@@ -66,23 +66,15 @@
 
 > Lookup tools, realtime play, and campaign history.
 
-| # | Feature | Spec | Priority | Status | Notes |
+| Task ID | Feature | Spec | Priority | Status | Description |
 |---|---------|------|----------|--------|-------|
-| 14 | Rules Reference | SPEC-014 | MAY | 📋 Planned | Searchable SRD rules quick-lookup for common mechanics |
-| 15 | Realtime Session Mode | SPEC-015 | MAY | 📋 Planned | Live HP updates, initiative order via WebSocket; for active play sessions |
-| 16 | Campaign Timeline | SPEC-016 | MAY | 📋 Planned | Shared chronological event log visible to all campaign members |
-
----
-
-## Progress Summary
-
-| Phase | Total | Done | Remaining |
-|-------|-------|------|-----------|
-| Phase 1 — Foundation | 4 | 4 | 0 |
-| Phase 2 — Core Gameplay | 4 | 3 | 1 (SPEC-008) |
-| Phase 3 — Quality of Life | 5 | 0 | 5 |
-| Phase 4 — Nice to Have | 3 | 0 | 3 |
-| **Total** | **16** | **7** | **9** |
+| 013 | World Notes | SPEC-013 | SHOULD | 📋 Planned | Locations, factions, lore; DM + selectively shared visibility |
+| 012 | Quest / Plot Tracker | SPEC-013 | SHOULD | 📋 Planned | Active quests, objectives, completion status; DM-managed, visible to players |
+| 015 | Rules Reference | SPEC-015 | SHOULD | 📋 Planned | Searchable SRD rules quick-lookup for common mechanics |
+| 016 | Realtime Session Mode | SPEC-016 | MAY | 📋 Planned | Live HP updates, initiative order via WebSocket; for active play sessions |
+| 017 | Campaign Timeline | SPEC-017 | MAY | 📋 Planned | Shared chronological event log visible to all campaign members |
+| 019 | Sorting Databases | SPEC-014 | MUST | 📋 Planned | Must sort all items, monsters, etc. by book these come from (ex. Player's Handbook, Dungeon Master's Guide, Xanathar's Guide to Everiting, etc.) |
+| 018 | Custom Rules | SPEC-018 | MAY | 📋 Planned | Display a check-list with all the availabe books and rules for the player or dm to enable or disable, alowing the dm to show or use specific content |
 
 ---
 
@@ -97,19 +89,3 @@
 ```
 
 > Only spec the next 1–2 features at a time. Avoid speccing far ahead — requirements change.
-
----
-
-## Architecture Decisions
-
-| Decision | Chosen | Rationale |
-|----------|--------|-----------|
-| SRD data source | 5e-database 2014 (local seed) | No runtime dependency on external APIs; faster queries; freely extensible |
-| Additional content | open5e (optional seed) | Includes third-party OGL content (Kobold Press, etc.) |
-| Frontend | React 19 + TypeScript + Tailwind v4 | Type safety, good ecosystem |
-| Backend | Hono + TypeScript | Lightweight, fast, type-safe |
-| Database | PostgreSQL 17 + Drizzle ORM | JSON support for custom content, full-text search |
-| Monorepo | pnpm workspaces | Shared packages between web and api apps |
-| Custom content model | base_id (FK, nullable) + overrides (JSONB) | Clone SRD entities or create from scratch |
-| Auth | JWT (7-day) | Stateless, simple to implement across monorepo |
-| Migrations | Hand-authored SQL + SHA256 hash tracking | Full control; drizzle-kit skips manual migrations without snapshots |
