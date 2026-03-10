@@ -1,0 +1,12 @@
+{
+  "name": "rolecompanion",
+  "private": true,
+  "scripts": {
+    "dev": "docker compose up",
+    "dev:api": "pnpm --filter api dev",
+    "dev:web": "pnpm --filter web dev",
+    "build": "pnpm -r build",
+    "test": "docker compose -f docker-compose.test.yml run --rm api-test",
+    "seed": "pnpm --filter @rolecompanion/db seed"
+  }
+}

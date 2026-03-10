@@ -1,0 +1,34 @@
+services:
+  db-test:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: rolecompanion
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: rolecompanion_test
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rolecompanion"]
+      interval: 2s
+      timeout: 5s
+      retries: 15
+
+  api-test:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      DATABASE_URL: postgres://rolecompanion:secret@db-test:5432/rolecompanion_test
+      JWT_SECRET: test-jwt-secret
+    volumes:
+      - ./apps/api/src:/app/apps/api/src
+      - ./packages/db/src:/app/packages/db/src
+      - ./packages/db/migrations:/app/packages/db/migrations
+    depends_on:
+      db-test:
+        condition: service_healthy
+    entrypoint:
+      - sh
+      - -c
+      - |
+        pnpm --filter @rolecompanion/db migrate &&
+        pnpm --filter @rolecompanion/db seed &&
+        pnpm --filter api test

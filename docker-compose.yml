@@ -1,0 +1,52 @@
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: rolecompanion
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: rolecompanion
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rolecompanion"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    ports:
+      - "3001:3000"
+    environment:
+      DATABASE_URL: postgres://rolecompanion:secret@db:5432/rolecompanion
+      JWT_SECRET: dev-jwt-secret-replace-in-production
+      PORT: 3000
+    volumes:
+      - ./apps/api/src:/app/apps/api/src
+      - ./packages/db/src:/app/packages/db/src
+      - ./packages/db/migrations:/app/packages/db/migrations
+    depends_on:
+      db:
+        condition: service_healthy
+    entrypoint: ["sh", "/app/apps/api/entrypoint.sh"]
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      API_URL: http://api:3000
+    volumes:
+      - ./apps/web/src:/app/apps/web/src
+      - ./apps/web/vite.config.ts:/app/apps/web/vite.config.ts
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
