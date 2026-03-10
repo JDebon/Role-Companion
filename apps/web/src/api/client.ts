@@ -439,3 +439,156 @@ export function patchCustomEntity(
 export function deleteCustomEntity(campaignId: string, entityId: string): Promise<void> {
   return request(`/campaigns/${campaignId}/custom-content/${entityId}`, { method: 'DELETE' })
 }
+
+// ── NPCs ──────────────────────────────────────────────────────────────────────
+
+export interface Npc {
+  id: string
+  name: string
+  monsterIndex: string | null
+  customEntityId: string | null
+  notes: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CreateNpcInput {
+  name: string
+  monsterIndex?: string | null
+  customEntityId?: string | null
+  notes?: string
+}
+
+export function getNpcs(campaignId: string): Promise<Npc[]> {
+  return request(`/campaigns/${campaignId}/npcs`)
+}
+
+export function createNpc(campaignId: string, data: CreateNpcInput): Promise<Npc> {
+  return request(`/campaigns/${campaignId}/npcs`, { method: 'POST', body: JSON.stringify(data) })
+}
+
+export function patchNpc(campaignId: string, npcId: string, data: Partial<CreateNpcInput>): Promise<Npc> {
+  return request(`/campaigns/${campaignId}/npcs/${npcId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  })
+}
+
+export function deleteNpc(campaignId: string, npcId: string): Promise<void> {
+  return request(`/campaigns/${campaignId}/npcs/${npcId}`, { method: 'DELETE' })
+}
+
+// ── Encounters ────────────────────────────────────────────────────────────────
+
+export interface EncounterSummary {
+  id: string
+  name: string
+  status: 'preparing' | 'active' | 'completed'
+  round: number
+  combatantCount: number
+  createdAt: string
+}
+
+export type CombatantType = 'player_character' | 'srd_monster' | 'custom_monster' | 'npc'
+
+export interface Combatant {
+  id: string
+  displayName: string
+  type: CombatantType
+  monsterIndex: string | null
+  characterId: string | null
+  customEntityId: string | null
+  npcId: string | null
+  initiative: number | null
+  currentHp: number
+  maxHp: number
+  armorClass: number
+  isUnconscious: boolean
+  sortOrder: number
+}
+
+export interface EncounterDetail {
+  id: string
+  name: string
+  status: 'preparing' | 'active' | 'completed'
+  round: number
+  currentTurnIndex: number
+  combatants: Combatant[]
+}
+
+export function getEncounters(campaignId: string): Promise<EncounterSummary[]> {
+  return request(`/campaigns/${campaignId}/encounters`)
+}
+
+export function createEncounter(campaignId: string, name: string): Promise<EncounterSummary> {
+  return request(`/campaigns/${campaignId}/encounters`, {
+    method: 'POST',
+    body: JSON.stringify({ name }),
+  })
+}
+
+export function getEncounter(campaignId: string, encounterId: string): Promise<EncounterDetail> {
+  return request(`/campaigns/${campaignId}/encounters/${encounterId}`)
+}
+
+export function deleteEncounter(campaignId: string, encounterId: string): Promise<void> {
+  return request(`/campaigns/${campaignId}/encounters/${encounterId}`, { method: 'DELETE' })
+}
+
+export type AddCombatantInput =
+  | { type: 'srd_monster'; monsterIndex: string; count?: number }
+  | { type: 'player_character'; characterId: string }
+  | { type: 'custom_monster'; customEntityId: string; count?: number }
+  | { type: 'npc'; npcId: string }
+
+export function addCombatant(
+  campaignId: string,
+  encounterId: string,
+  data: AddCombatantInput
+): Promise<Combatant[]> {
+  return request(`/campaigns/${campaignId}/encounters/${encounterId}/combatants`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
+
+export function startEncounter(
+  campaignId: string,
+  encounterId: string,
+  initiatives: Array<{ combatantId: string; initiative: number }>
+): Promise<EncounterDetail> {
+  return request(`/campaigns/${campaignId}/encounters/${encounterId}/start`, {
+    method: 'POST',
+    body: JSON.stringify({ initiatives }),
+  })
+}
+
+export function applyHpDelta(
+  campaignId: string,
+  encounterId: string,
+  combatantId: string,
+  delta: number
+): Promise<{ combatantId: string; currentHp: number; isUnconscious: boolean }> {
+  return request(`/campaigns/${campaignId}/encounters/${encounterId}/combatants/${combatantId}/hp`, {
+    method: 'POST',
+    body: JSON.stringify({ delta }),
+  })
+}
+
+export function nextTurn(
+  campaignId: string,
+  encounterId: string
+): Promise<{ currentTurnIndex: number; round: number; activeCombatant: { id: string; displayName: string } | null }> {
+  return request(`/campaigns/${campaignId}/encounters/${encounterId}/next-turn`, { method: 'POST' })
+}
+
+export function endEncounter(campaignId: string, encounterId: string): Promise<{ status: string }> {
+  return request(`/campaigns/${campaignId}/encounters/${encounterId}/end`, { method: 'POST' })
+}
+
+export function resetEncounter(
+  campaignId: string,
+  encounterId: string
+): Promise<{ status: string; round: number }> {
+  return request(`/campaigns/${campaignId}/encounters/${encounterId}/reset`, { method: 'POST' })
+}

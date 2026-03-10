@@ -263,6 +263,11 @@ export const concentrationTracker = pgTable('concentration_tracker', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })
 
+// ── DM Tools: NPCs, Encounters, Combatants ────────────────────────────────────
+
+export const encounterStatusEnum = pgEnum('encounter_status', ['preparing', 'active', 'completed'])
+export const combatantTypeEnum = pgEnum('combatant_type', ['player_character', 'srd_monster', 'custom_monster', 'npc'])
+
 // ── Custom Content Tables ──────────────────────────────────────────────────────
 
 export const customEntities = pgTable('custom_entities', {
@@ -279,4 +284,53 @@ export const customEntities = pgTable('custom_entities', {
   data: jsonb('data').notNull().$type<Record<string, unknown>>(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
+
+export const npcs = pgTable('npcs', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  campaignId: uuid('campaign_id')
+    .notNull()
+    .references(() => campaigns.id, { onDelete: 'cascade' }),
+  name: varchar('name', { length: 200 }).notNull(),
+  monsterIndex: varchar('monster_index', { length: 100 }),
+  customEntityId: uuid('custom_entity_id')
+    .references(() => customEntities.id, { onDelete: 'set null' }),
+  notes: text('notes').notNull().default(''),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
+
+export const encounters = pgTable('encounters', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  campaignId: uuid('campaign_id')
+    .notNull()
+    .references(() => campaigns.id, { onDelete: 'cascade' }),
+  name: varchar('name', { length: 200 }).notNull(),
+  status: encounterStatusEnum('status').notNull().default('preparing'),
+  currentTurnIndex: integer('current_turn_index').notNull().default(0),
+  round: integer('round').notNull().default(1),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
+
+export const combatants = pgTable('combatants', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  encounterId: uuid('encounter_id')
+    .notNull()
+    .references(() => encounters.id, { onDelete: 'cascade' }),
+  type: combatantTypeEnum('type').notNull(),
+  characterId: uuid('character_id')
+    .references(() => characters.id, { onDelete: 'set null' }),
+  monsterIndex: varchar('monster_index', { length: 100 }),
+  customEntityId: uuid('custom_entity_id')
+    .references(() => customEntities.id, { onDelete: 'set null' }),
+  npcId: uuid('npc_id')
+    .references(() => npcs.id, { onDelete: 'set null' }),
+  displayName: varchar('display_name', { length: 200 }).notNull(),
+  maxHp: integer('max_hp').notNull(),
+  currentHp: integer('current_hp').notNull(),
+  armorClass: integer('armor_class').notNull(),
+  initiative: integer('initiative'),
+  isUnconscious: boolean('is_unconscious').notNull().default(false),
+  sortOrder: integer('sort_order').notNull().default(0),
 })

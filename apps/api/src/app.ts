@@ -6,6 +6,7 @@ import { campaignCharactersRouter, charactersRouter } from './routes/characters.
 import { inventoryRouter } from './routes/inventory.js'
 import { spellsRouter } from './routes/spells.js'
 import { customContentRouter } from './routes/custom-content.js'
+import { encountersRouter, npcsRouter } from './routes/dm-tools.js'
 
 const app = new Hono()
 
@@ -15,6 +16,8 @@ app.route('/api/v1/auth', authRouter)
 app.route('/api/v1/campaigns', campaignsRouter)
 app.route('/api/v1/campaigns', campaignCharactersRouter)
 app.route('/api/v1/campaigns', customContentRouter)
+app.route('/api/v1/campaigns', encountersRouter)
+app.route('/api/v1/campaigns', npcsRouter)
 app.route('/api/v1/characters', charactersRouter)
 app.route('/api/v1/characters', inventoryRouter)
 app.route('/api/v1/characters', spellsRouter)

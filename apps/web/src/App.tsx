@@ -5,6 +5,9 @@ import { CampaignListPage } from './pages/CampaignListPage'
 import { CampaignPage } from './pages/CampaignPage'
 import { CharacterSheetPage } from './pages/CharacterSheetPage'
 import { CustomContentPage } from './pages/CustomContentPage'
+import { EncounterListPage } from './pages/EncounterListPage'
+import { EncounterRunnerPage } from './pages/EncounterRunnerPage'
+import { NpcPage } from './pages/NpcPage'
 import { ProtectedRoute } from './components/ProtectedRoute'
 
 export default function App() {
@@ -33,6 +36,30 @@ export default function App() {
         element={
           <ProtectedRoute>
             <CustomContentPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/campaigns/:id/encounters"
+        element={
+          <ProtectedRoute>
+            <EncounterListPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/campaigns/:id/encounters/:encId"
+        element={
+          <ProtectedRoute>
+            <EncounterRunnerPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/campaigns/:id/npcs"
+        element={
+          <ProtectedRoute>
+            <NpcPage />
           </ProtectedRoute>
         }
       />

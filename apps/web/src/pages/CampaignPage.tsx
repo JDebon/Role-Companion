@@ -344,6 +344,29 @@ export function CampaignPage() {
               )}
             </section>
 
+            {/* DM Tools — Encounters + NPCs (DM only) */}
+            {isDM && (
+              <section className="bg-stone-900 border border-stone-800 rounded-xl p-6">
+                <h2 className="text-lg font-semibold mb-4">DM Tools</h2>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => navigate(`/campaigns/${id}/encounters`)}
+                    className="flex-1 px-4 py-3 bg-stone-800 hover:bg-stone-700 rounded-xl transition-colors text-left"
+                  >
+                    <p className="font-semibold text-sm">⚔ Encounters</p>
+                    <p className="text-xs text-stone-400 mt-0.5">Run combat with initiative tracking</p>
+                  </button>
+                  <button
+                    onClick={() => navigate(`/campaigns/${id}/npcs`)}
+                    className="flex-1 px-4 py-3 bg-stone-800 hover:bg-stone-700 rounded-xl transition-colors text-left"
+                  >
+                    <p className="font-semibold text-sm">👥 NPCs</p>
+                    <p className="text-xs text-stone-400 mt-0.5">Manage campaign NPCs</p>
+                  </button>
+                </div>
+              </section>
+            )}
+
             {/* Custom Content */}
             <section className="bg-stone-900 border border-stone-800 rounded-xl p-6">
               <div className="flex items-center justify-between mb-4">
