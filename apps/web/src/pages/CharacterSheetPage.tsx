@@ -54,6 +54,60 @@ const COIN_LABELS: Array<{ key: keyof Currency; label: string; color: string }> 
   { key: 'cp', label: 'CP', color: 'text-orange-400' },
 ]
 
+function SpellRow({
+  spell, isOwner, isConcentrating, onDelete, onConcentrate,
+}: {
+  spell: SpellEntry
+  isOwner: boolean
+  isConcentrating: boolean
+  onDelete: (idx: string) => void
+  onConcentrate: (idx: string | null) => void
+}) {
+  return (
+    <li className="flex items-center gap-2 bg-stone-800 rounded-lg px-3 py-2">
+      <div className="flex-1 min-w-0">
+        <div className="flex items-baseline gap-2 flex-wrap">
+          <span className="font-medium text-sm text-stone-100">{spell.name}</span>
+          <span className="text-xs text-stone-500">{spell.school}</span>
+          <span className={`text-xs px-1.5 py-0.5 rounded ${spell.status === 'prepared' ? 'bg-sky-500/20 text-sky-300' : 'bg-stone-700 text-stone-400'}`}>
+            {spell.status}
+          </span>
+          {spell.concentration && (
+            <span className="text-xs px-1.5 py-0.5 rounded bg-violet-500/20 text-violet-300">conc.</span>
+          )}
+          {isConcentrating && (
+            <span className="text-xs px-1.5 py-0.5 rounded bg-violet-500/40 text-violet-200 font-bold">ACTIVE</span>
+          )}
+        </div>
+      </div>
+      <div className="flex items-center gap-1 flex-shrink-0">
+        {isOwner && spell.concentration && spell.level > 0 && (
+          <button
+            onClick={() => isConcentrating ? onConcentrate(null) : onConcentrate(spell.spellIndex)}
+            title={isConcentrating ? 'End concentration' : 'Concentrate'}
+            className={`px-2 py-1 rounded text-xs transition-colors ${
+              isConcentrating
+                ? 'bg-violet-500/30 text-violet-200 border border-violet-500/50'
+                : 'bg-stone-700 text-stone-400 border border-stone-600 hover:text-violet-300'
+            }`}
+          >
+            {isConcentrating ? 'End' : 'Conc.'}
+          </button>
+        )}
+        {isOwner && (
+          <button
+            onClick={() => onDelete(spell.spellIndex)}
+            title="Remove spell"
+            className="w-7 h-7 rounded text-xs text-red-400 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition-colors"
+          >
+            ×
+          </button>
+        )}
+      </div>
+    </li>
+  )
+}
+
 export function CharacterSheetPage() {
   const { id } = useParams<{ id: string }>()
   const { user } = useAuth()
@@ -116,11 +170,104 @@ export function CharacterSheetPage() {
       .finally(() => setInvLoading(false))
   }, [activeTab, id, inventory])
 
+  useEffect(() => {
+    if (activeTab !== 'spells' || !id || spellsData) return
+    setSpellsLoading(true)
+    setSpellsError('')
+    getSpells(id)
+      .then((data) => {
+        setSpellsData(data)
+        const draft: Record<number, number> = {}
+        for (let i = 1; i <= 9; i++) {
+          draft[i] = data.slots[`l${i}` as keyof typeof data.slots].total
+        }
+        setSlotDraft(draft)
+      })
+      .catch(() => setSpellsError('Failed to load spells'))
+      .finally(() => setSpellsLoading(false))
+  }, [activeTab, id, spellsData])
+
   async function refreshInventory() {
     if (!id) return
     const inv = await getInventory(id)
     setInventory(inv)
     setCurrencyDraft(inv.currency)
+  }
+
+  async function refreshSpells() {
+    if (!id) return
+    const data = await getSpells(id)
+    setSpellsData(data)
+    const draft: Record<number, number> = {}
+    for (let i = 1; i <= 9; i++) {
+      draft[i] = data.slots[`l${i}` as keyof typeof data.slots].total
+    }
+    setSlotDraft(draft)
+  }
+
+  async function handleAddSpell() {
+    if (!id) return
+    setAddSpellError('')
+    setAddSpellSubmitting(true)
+    try {
+      if (!addSpellIndex.trim()) { setAddSpellError('Spell index is required'); return }
+      await addSpell(id, addSpellIndex.trim().toLowerCase(), addSpellStatus)
+      setShowAddSpell(false)
+      setAddSpellIndex('')
+      await refreshSpells()
+    } catch (err: any) {
+      const code = err.body?.error
+      if (code === 'SPELL_NOT_FOUND') setAddSpellError('Spell not found in SRD')
+      else if (code === 'ALREADY_KNOWN') setAddSpellError('Spell already on your list')
+      else setAddSpellError('Failed to add spell')
+    } finally {
+      setAddSpellSubmitting(false)
+    }
+  }
+
+  async function handleDeleteSpell(spellIndex: string) {
+    if (!id) return
+    await deleteSpell(id, spellIndex)
+    await refreshSpells()
+  }
+
+  async function handleExpendSlot(level: number) {
+    if (!id) return
+    try {
+      await expendSpellSlot(id, level)
+      await refreshSpells()
+    } catch (err: any) {
+      if (err.body?.error === 'INSUFFICIENT_SLOTS') alert('No slots remaining at this level')
+    }
+  }
+
+  async function handleRecoverSlots() {
+    if (!id) return
+    await recoverSpellSlots(id)
+    await refreshSpells()
+  }
+
+  async function handleSaveSlots() {
+    if (!id) return
+    const totals: Record<string, number> = {}
+    for (let i = 1; i <= 9; i++) {
+      totals[`l${i}Total`] = slotDraft[i] ?? 0
+    }
+    await putSpellSlots(id, totals as any)
+    setEditingSlots(false)
+    await refreshSpells()
+  }
+
+  async function handleSetConcentration(spellIndex: string | null) {
+    if (!id) return
+    try {
+      await putConcentration(id, spellIndex)
+      await refreshSpells()
+    } catch (err: any) {
+      const code = err.body?.error
+      if (code === 'NOT_CONCENTRATION_SPELL') alert('That spell does not require concentration')
+      else if (code === 'SPELL_NOT_FOUND') alert('Spell not on your list')
+    }
   }
 
   async function handleAddItem() {
@@ -228,7 +375,7 @@ export function CharacterSheetPage() {
 
       {/* Tabs */}
       <div className="border-b border-stone-800 px-6 flex gap-1">
-        {(['sheet', 'inventory'] as Tab[]).map((tab) => (
+        {(['sheet', 'inventory', 'spells'] as Tab[]).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -455,6 +602,222 @@ export function CharacterSheetPage() {
                       </li>
                     ))}
                   </ul>
+                )}
+              </section>
+            </>
+          ) : null}
+        </main>
+      )}
+
+      {activeTab === 'spells' && (
+        <main className="max-w-4xl mx-auto px-6 py-8 space-y-6">
+          {spellsLoading ? (
+            <p className="text-stone-400">Loading…</p>
+          ) : spellsError ? (
+            <p className="text-red-400 text-sm">{spellsError}</p>
+          ) : spellsData ? (
+            <>
+              {/* Concentration tracker */}
+              <section className="bg-stone-900 border border-stone-800 rounded-xl p-5">
+                <h2 className="text-sm font-semibold uppercase tracking-widest text-stone-400 mb-3">Concentration</h2>
+                {spellsData.concentration ? (
+                  <div className="flex items-center gap-3">
+                    <span className="px-3 py-1.5 rounded-lg bg-violet-500/20 border border-violet-500/40 text-violet-300 text-sm font-medium">
+                      {spellsData.concentration.name}
+                    </span>
+                    {isOwner && (
+                      <button
+                        onClick={() => handleSetConcentration(null)}
+                        className="px-3 py-1.5 text-xs text-red-400 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 rounded-lg transition-colors"
+                      >
+                        End Concentration
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm text-stone-500">Not concentrating</p>
+                )}
+              </section>
+
+              {/* Spell slots */}
+              <section className="bg-stone-900 border border-stone-800 rounded-xl p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-sm font-semibold uppercase tracking-widest text-stone-400">Spell Slots</h2>
+                  {isOwner && (
+                    <div className="flex gap-2">
+                      {editingSlots ? (
+                        <>
+                          <button
+                            onClick={handleSaveSlots}
+                            className="px-3 py-1.5 text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 rounded-lg transition-colors"
+                          >
+                            Save
+                          </button>
+                          <button
+                            onClick={() => setEditingSlots(false)}
+                            className="px-3 py-1.5 text-xs text-stone-400 border border-stone-600 rounded-lg hover:text-stone-200 transition-colors"
+                          >
+                            Cancel
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => setEditingSlots(true)}
+                            className="px-3 py-1.5 text-xs text-stone-400 border border-stone-600 rounded-lg hover:text-stone-200 transition-colors"
+                          >
+                            Edit Totals
+                          </button>
+                          <button
+                            onClick={handleRecoverSlots}
+                            className="px-3 py-1.5 text-xs bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/30 rounded-lg transition-colors"
+                          >
+                            Long Rest
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-3 sm:grid-cols-9 gap-2">
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((lvl) => {
+                    const slot = spellsData.slots[`l${lvl}` as keyof typeof spellsData.slots]
+                    return (
+                      <div key={lvl} className="flex flex-col items-center gap-1.5">
+                        <span className="text-xs text-stone-500 font-medium">L{lvl}</span>
+                        {editingSlots ? (
+                          <input
+                            type="number"
+                            min={0}
+                            max={9}
+                            value={slotDraft[lvl] ?? slot.total}
+                            onChange={(e) => setSlotDraft((d) => ({ ...d, [lvl]: Math.max(0, parseInt(e.target.value, 10) || 0) }))}
+                            className="w-full px-1 py-1 text-center text-sm bg-stone-800 border border-stone-600 rounded-lg focus:outline-none focus:border-amber-500"
+                          />
+                        ) : (
+                          <div className="flex flex-wrap justify-center gap-1">
+                            {slot.total === 0 ? (
+                              <span className="text-xs text-stone-600">—</span>
+                            ) : (
+                              Array.from({ length: slot.total }).map((_, i) => (
+                                <button
+                                  key={i}
+                                  onClick={() => {
+                                    if (!isOwner) return
+                                    // Click the rightmost available pip to expend
+                                    if (i === slot.total - slot.used - 1) handleExpendSlot(lvl)
+                                  }}
+                                  disabled={!isOwner}
+                                  title={i < slot.total - slot.used ? 'Click to expend' : 'Used'}
+                                  className={`w-4 h-4 rounded-full border transition-colors ${
+                                    i < slot.total - slot.used
+                                      ? 'bg-violet-500 border-violet-400 hover:bg-violet-400 cursor-pointer'
+                                      : 'bg-stone-700 border-stone-600'
+                                  } disabled:cursor-default`}
+                                />
+                              ))
+                            )}
+                          </div>
+                        )}
+                        {!editingSlots && slot.total > 0 && (
+                          <span className="text-xs text-stone-500 font-mono">
+                            {slot.total - slot.used}/{slot.total}
+                          </span>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </section>
+
+              {/* Spell list */}
+              <section className="bg-stone-900 border border-stone-800 rounded-xl p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-sm font-semibold uppercase tracking-widest text-stone-400">
+                    Spells ({spellsData.spells.length})
+                  </h2>
+                  {isOwner && (
+                    <button
+                      onClick={() => { setShowAddSpell(true); setAddSpellError('') }}
+                      className="px-3 py-1.5 text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 rounded-lg transition-colors"
+                    >
+                      + Add Spell
+                    </button>
+                  )}
+                </div>
+
+                {/* Add spell form */}
+                {showAddSpell && (
+                  <div className="mb-4 p-4 bg-stone-800 rounded-lg border border-stone-700 space-y-3">
+                    <input
+                      type="text"
+                      placeholder="SRD index (e.g. fireball, hold-person)"
+                      value={addSpellIndex}
+                      onChange={(e) => setAddSpellIndex(e.target.value)}
+                      className="w-full px-3 py-2 text-sm bg-stone-700 border border-stone-600 rounded-lg focus:outline-none focus:border-amber-500"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setAddSpellStatus('known')}
+                        className={`flex-1 py-1.5 text-xs rounded-lg border transition-colors ${addSpellStatus === 'known' ? 'border-amber-500 text-amber-300 bg-amber-500/10' : 'border-stone-600 text-stone-400 hover:text-stone-200'}`}
+                      >
+                        Known
+                      </button>
+                      <button
+                        onClick={() => setAddSpellStatus('prepared')}
+                        className={`flex-1 py-1.5 text-xs rounded-lg border transition-colors ${addSpellStatus === 'prepared' ? 'border-amber-500 text-amber-300 bg-amber-500/10' : 'border-stone-600 text-stone-400 hover:text-stone-200'}`}
+                      >
+                        Prepared
+                      </button>
+                    </div>
+                    {addSpellError && <p className="text-xs text-red-400">{addSpellError}</p>}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleAddSpell}
+                        disabled={addSpellSubmitting}
+                        className="flex-1 py-2 text-sm bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 rounded-lg disabled:opacity-40 transition-colors"
+                      >
+                        {addSpellSubmitting ? 'Adding…' : 'Add'}
+                      </button>
+                      <button
+                        onClick={() => setShowAddSpell(false)}
+                        className="px-4 py-2 text-sm text-stone-400 hover:text-stone-200 border border-stone-600 rounded-lg transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {spellsData.spells.length === 0 ? (
+                  <p className="text-sm text-stone-500 text-center py-6">No spells yet.</p>
+                ) : (
+                  <div className="space-y-1">
+                    {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((lvl) => {
+                      const group = spellsData.spells.filter((s) => s.level === lvl)
+                      if (group.length === 0) return null
+                      return (
+                        <div key={lvl}>
+                          <p className="text-xs font-bold text-stone-500 uppercase tracking-wider px-1 pt-3 pb-1">
+                            {lvl === 0 ? 'Cantrips' : `Level ${lvl}`}
+                          </p>
+                          <ul className="space-y-1">
+                            {group.map((spell) => (
+                              <SpellRow
+                                key={spell.spellIndex}
+                                spell={spell}
+                                isOwner={isOwner}
+                                isConcentrating={spellsData.concentration?.spellIndex === spell.spellIndex}
+                                onDelete={handleDeleteSpell}
+                                onConcentrate={handleSetConcentration}
+                              />
+                            ))}
+                          </ul>
+                        </div>
+                      )
+                    })}
+                  </div>
                 )}
               </section>
             </>

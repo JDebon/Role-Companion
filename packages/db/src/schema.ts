@@ -13,6 +13,8 @@ import {
   real,
 } from 'drizzle-orm/pg-core'
 
+export const entityTypeEnum = pgEnum('entity_type', ['monster', 'item', 'rule'])
+
 export const spellStatusEnum = pgEnum('spell_status', ['known', 'prepared'])
 
 export const roleEnum = pgEnum('campaign_role', ['dungeon_master', 'player'])
@@ -258,5 +260,23 @@ export const concentrationTracker = pgTable('concentration_tracker', {
     .references(() => characters.id, { onDelete: 'cascade' }),
   spellIndex: varchar('spell_index', { length: 100 }),
   startedAt: timestamp('started_at'),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
+
+// ── Custom Content Tables ──────────────────────────────────────────────────────
+
+export const customEntities = pgTable('custom_entities', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  campaignId: uuid('campaign_id')
+    .notNull()
+    .references(() => campaigns.id, { onDelete: 'cascade' }),
+  creatorId: uuid('creator_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  entityType: entityTypeEnum('entity_type').notNull(),
+  name: varchar('name', { length: 200 }).notNull(),
+  baseIndex: varchar('base_index', { length: 100 }),
+  data: jsonb('data').notNull().$type<Record<string, unknown>>(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })

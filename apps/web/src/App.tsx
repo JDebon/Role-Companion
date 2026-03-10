@@ -4,6 +4,7 @@ import { RegisterPage } from './pages/RegisterPage'
 import { CampaignListPage } from './pages/CampaignListPage'
 import { CampaignPage } from './pages/CampaignPage'
 import { CharacterSheetPage } from './pages/CharacterSheetPage'
+import { CustomContentPage } from './pages/CustomContentPage'
 import { ProtectedRoute } from './components/ProtectedRoute'
 
 export default function App() {
@@ -24,6 +25,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <CampaignPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/campaigns/:id/custom-content"
+        element={
+          <ProtectedRoute>
+            <CustomContentPage />
           </ProtectedRoute>
         }
       />

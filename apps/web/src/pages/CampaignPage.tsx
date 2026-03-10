@@ -344,6 +344,22 @@ export function CampaignPage() {
               )}
             </section>
 
+            {/* Custom Content */}
+            <section className="bg-stone-900 border border-stone-800 rounded-xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold">Custom Content</h2>
+                <button
+                  onClick={() => navigate(`/campaigns/${id}/custom-content`)}
+                  className="px-3 py-1.5 text-sm bg-stone-700 hover:bg-stone-600 text-stone-100 font-semibold rounded-lg transition-colors"
+                >
+                  View All
+                </button>
+              </div>
+              <p className="text-stone-500 text-sm">
+                {isDM ? 'Create homebrew monsters, items, and rules for this campaign.' : 'View the homebrew content your DM has created.'}
+              </p>
+            </section>
+
             {/* Invite code (DM only) */}
             {isDM && (
               <section className="bg-stone-900 border border-stone-800 rounded-xl p-6">

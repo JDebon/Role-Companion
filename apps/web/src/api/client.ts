@@ -376,3 +376,66 @@ export function putConcentration(
     body: JSON.stringify({ spellIndex }),
   })
 }
+
+// ── Custom Content ────────────────────────────────────────────────────────────
+
+export type EntityType = 'monster' | 'item' | 'rule'
+
+export interface CustomEntitySummary {
+  id: string
+  entityType: EntityType
+  name: string
+  baseIndex: string | null
+  createdAt: string
+}
+
+export interface CustomEntityDetail extends CustomEntitySummary {
+  data: Record<string, unknown>
+  updatedAt: string
+}
+
+export interface CreateCustomEntityInput {
+  entityType: EntityType
+  name: string
+  baseIndex?: string | null
+  data: Record<string, unknown>
+}
+
+export interface PatchCustomEntityInput {
+  name?: string
+  data?: Record<string, unknown>
+}
+
+export function getCustomContent(campaignId: string, type?: EntityType): Promise<CustomEntitySummary[]> {
+  const qs = type ? `?type=${type}` : ''
+  return request(`/campaigns/${campaignId}/custom-content${qs}`)
+}
+
+export function getCustomEntity(campaignId: string, entityId: string): Promise<CustomEntityDetail> {
+  return request(`/campaigns/${campaignId}/custom-content/${entityId}`)
+}
+
+export function createCustomEntity(
+  campaignId: string,
+  data: CreateCustomEntityInput
+): Promise<CustomEntitySummary> {
+  return request(`/campaigns/${campaignId}/custom-content`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
+
+export function patchCustomEntity(
+  campaignId: string,
+  entityId: string,
+  data: PatchCustomEntityInput
+): Promise<CustomEntityDetail> {
+  return request(`/campaigns/${campaignId}/custom-content/${entityId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  })
+}
+
+export function deleteCustomEntity(campaignId: string, entityId: string): Promise<void> {
+  return request(`/campaigns/${campaignId}/custom-content/${entityId}`, { method: 'DELETE' })
+}
