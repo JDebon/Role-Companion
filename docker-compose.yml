@@ -32,7 +32,18 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    entrypoint: ["sh", "/app/apps/api/entrypoint.sh"]
+    entrypoint: >
+      sh -c "
+        echo 'Waiting for database...' &&
+        until nc -z db 5432 2>/dev/null; do sleep 1; done &&
+        echo 'Database is reachable.' &&
+        echo 'Running migrations...' &&
+        pnpm --filter @rolecompanion/db migrate &&
+        echo 'Seeding SRD data...' &&
+        pnpm --filter @rolecompanion/db seed &&
+        echo 'Starting API...' &&
+        exec pnpm --filter api dev
+      "
 
   web:
     build:
