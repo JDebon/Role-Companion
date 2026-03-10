@@ -44,7 +44,7 @@
 | 5 | Spell Management | [SPEC-005](./SPEC-005-spell-management/SPEC-005-spell-management.md) | MUST | 🟢 Done | Spell slots per level, spells known/prepared, concentration tracker |
 | 6 | Custom Content | [SPEC-006](./SPEC-006-custom-content/SPEC-006-custom-content.md) | MUST | 🟢 Done | Clone + override SRD entities or create from scratch; DM-only creation |
 | 7 | DM Tools — NPCs & Encounter Tracker | [SPEC-007](./SPEC-007-dm-tools/SPEC-007-dm-tools.md) | MUST | 🟢 Done | NPC tracker, monster stat blocks, HP tracking per encounter, initiative order |
-| 8 | Notes & Session Logs | [SPEC-008](./SPEC-008-notes-session-logs/SPEC-008-notes-session-logs.md) | MUST | ✅ Approved | Per-character private notes, shared session summaries, DM-selectively-revealed info |
+| 8 | Notes & Session Logs | [SPEC-008](./SPEC-008-notes-session-logs/SPEC-008-notes-session-logs.md) | MUST | 🟢 Done | Per-character private notes, shared session summaries, DM-selectively-revealed info |
 
 ---
 
