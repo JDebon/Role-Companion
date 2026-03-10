@@ -15,6 +15,4 @@ COPY tsconfig.base.json ./
 COPY apps/api/ apps/api/
 COPY packages/db/ packages/db/
 
-RUN sed -i 's/\r//' apps/api/entrypoint.sh && chmod +x apps/api/entrypoint.sh
-
 EXPOSE 3000

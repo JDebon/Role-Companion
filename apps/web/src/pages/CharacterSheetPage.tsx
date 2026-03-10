@@ -6,6 +6,8 @@ import {
   type InventoryResponse, type InventoryItem, type Currency,
   getSpells, addSpell, deleteSpell, putSpellSlots, expendSpellSlot, recoverSpellSlots, putConcentration,
   type SpellsResponse, type SpellEntry,
+  getCharacterNotes, getCharacterNote, createCharacterNote, patchCharacterNote, deleteCharacterNote,
+  type NoteSummary, type NoteDetail,
 } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 
@@ -44,7 +46,227 @@ function ProfDot({ level }: { level: 'none' | 'proficient' | 'expertise' }) {
   return <span className="w-3 h-3 rounded-full border border-stone-600 inline-block" title="None" />
 }
 
-type Tab = 'sheet' | 'inventory' | 'spells'
+type Tab = 'sheet' | 'inventory' | 'spells' | 'notes'
+
+// ── Notes Tab ─────────────────────────────────────────────────────────────────
+
+function NotesTab({ characterId }: { characterId: string }) {
+  const [notes, setNotes] = useState<NoteSummary[]>([])
+  const [loading, setLoading] = useState(true)
+  const [selectedNote, setSelectedNote] = useState<NoteDetail | null>(null)
+  const [showCreate, setShowCreate] = useState(false)
+  const [editingNote, setEditingNote] = useState<NoteDetail | null>(null)
+  const [form, setForm] = useState({ title: '', content: '' })
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [searchQ, setSearchQ] = useState('')
+
+  useEffect(() => {
+    setLoading(true)
+    getCharacterNotes(characterId, searchQ || undefined)
+      .then(setNotes)
+      .catch(() => setNotes([]))
+      .finally(() => setLoading(false))
+  }, [characterId, searchQ])
+
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault()
+    if (!form.title.trim()) return
+    setSubmitting(true)
+    setError(null)
+    try {
+      const created = await createCharacterNote(characterId, { title: form.title, content: form.content })
+      setNotes((prev) => [
+        { id: created.id, title: created.title, isRevealed: created.isRevealed, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
+        ...prev,
+      ])
+      setShowCreate(false)
+      setForm({ title: '', content: '' })
+    } catch {
+      setError('Failed to create note.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function handleLoadDetail(noteId: string) {
+    if (selectedNote?.id === noteId) {
+      setSelectedNote(null)
+      return
+    }
+    try {
+      const detail = await getCharacterNote(characterId, noteId)
+      setSelectedNote(detail)
+      setEditingNote(null)
+    } catch {
+      // ignore
+    }
+  }
+
+  async function handleEdit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!editingNote) return
+    setSubmitting(true)
+    setError(null)
+    try {
+      const updated = await patchCharacterNote(characterId, editingNote.id, { title: form.title, content: form.content })
+      setNotes((prev) => prev.map((n) => n.id === updated.id ? { ...n, title: updated.title, updatedAt: updated.updatedAt } : n))
+      setSelectedNote(updated)
+      setEditingNote(null)
+    } catch {
+      setError('Failed to update note.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function handleDelete(noteId: string) {
+    if (!confirm('Delete this note?')) return
+    try {
+      await deleteCharacterNote(characterId, noteId)
+      setNotes((prev) => prev.filter((n) => n.id !== noteId))
+      if (selectedNote?.id === noteId) setSelectedNote(null)
+      if (editingNote?.id === noteId) setEditingNote(null)
+    } catch {
+      // ignore
+    }
+  }
+
+  function startEdit(note: NoteDetail) {
+    setEditingNote(note)
+    setForm({ title: note.title, content: note.content })
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Toolbar */}
+      <div className="flex gap-3">
+        <input
+          type="search"
+          placeholder="Search notes…"
+          value={searchQ}
+          onChange={(e) => setSearchQ(e.target.value)}
+          className="flex-1 bg-stone-800 border border-stone-700 rounded-lg px-3 py-2 text-sm text-stone-100 placeholder-stone-500 focus:outline-none focus:border-amber-500"
+        />
+        <button
+          onClick={() => { setShowCreate(true); setForm({ title: '', content: '' }); setError(null) }}
+          className="px-4 py-2 text-sm bg-amber-500 hover:bg-amber-400 text-stone-900 font-semibold rounded-lg transition-colors"
+        >
+          + New Note
+        </button>
+      </div>
+
+      {/* Create form */}
+      {showCreate && (
+        <div className="bg-stone-800 border border-stone-700 rounded-xl p-4">
+          <h3 className="font-semibold mb-3">New Note</h3>
+          <form onSubmit={handleCreate} className="space-y-3">
+            <input
+              type="text"
+              placeholder="Title"
+              value={form.title}
+              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+              className="w-full bg-stone-700 border border-stone-600 rounded-lg px-3 py-2 text-sm text-stone-100 placeholder-stone-500 focus:outline-none focus:border-amber-500"
+              required
+            />
+            <textarea
+              placeholder="Content (optional)"
+              value={form.content}
+              onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
+              rows={5}
+              className="w-full bg-stone-700 border border-stone-600 rounded-lg px-3 py-2 text-sm text-stone-100 placeholder-stone-500 focus:outline-none focus:border-amber-500 resize-y"
+            />
+            {error && <p className="text-red-400 text-xs">{error}</p>}
+            <div className="flex gap-2 justify-end">
+              <button type="button" onClick={() => setShowCreate(false)} className="px-3 py-1.5 text-sm text-stone-400 hover:text-stone-200">Cancel</button>
+              <button type="submit" disabled={submitting} className="px-4 py-1.5 text-sm bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-stone-900 font-semibold rounded-lg">
+                {submitting ? 'Saving…' : 'Save'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Notes list */}
+      {loading ? (
+        <p className="text-stone-400 text-sm">Loading notes…</p>
+      ) : notes.length === 0 ? (
+        <p className="text-stone-500 text-sm">No notes yet.</p>
+      ) : (
+        <ul className="space-y-2">
+          {notes.map((note) => (
+            <li key={note.id} className="bg-stone-800 border border-stone-700 rounded-xl overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-3">
+                <button
+                  onClick={() => handleLoadDetail(note.id)}
+                  className="flex-1 text-left text-sm font-medium hover:text-amber-300 transition-colors"
+                >
+                  {note.title}
+                  {note.isRevealed && (
+                    <span className="ml-2 text-xs bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded">Revealed</span>
+                  )}
+                </button>
+                <div className="flex gap-2 ml-3">
+                  <button
+                    onClick={async () => {
+                      const detail = await getCharacterNote(characterId, note.id)
+                      startEdit(detail)
+                      setSelectedNote(null)
+                      setShowCreate(false)
+                    }}
+                    className="text-xs text-stone-400 hover:text-amber-400 transition-colors"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => handleDelete(note.id)}
+                    className="text-xs text-stone-400 hover:text-red-400 transition-colors"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+              {/* Expanded detail view */}
+              {selectedNote?.id === note.id && editingNote?.id !== note.id && (
+                <div className="px-4 pb-4 border-t border-stone-700 pt-3">
+                  <p className="text-sm text-stone-300 whitespace-pre-wrap">{selectedNote.content || <span className="text-stone-500 italic">No content.</span>}</p>
+                  <p className="text-xs text-stone-500 mt-2">Updated {new Date(selectedNote.updatedAt).toLocaleDateString()}</p>
+                </div>
+              )}
+              {/* Edit form */}
+              {editingNote?.id === note.id && (
+                <div className="px-4 pb-4 border-t border-stone-700 pt-3">
+                  <form onSubmit={handleEdit} className="space-y-3">
+                    <input
+                      type="text"
+                      value={form.title}
+                      onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                      className="w-full bg-stone-700 border border-stone-600 rounded-lg px-3 py-2 text-sm text-stone-100 focus:outline-none focus:border-amber-500"
+                      required
+                    />
+                    <textarea
+                      value={form.content}
+                      onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
+                      rows={5}
+                      className="w-full bg-stone-700 border border-stone-600 rounded-lg px-3 py-2 text-sm text-stone-100 focus:outline-none focus:border-amber-500 resize-y"
+                    />
+                    {error && <p className="text-red-400 text-xs">{error}</p>}
+                    <div className="flex gap-2 justify-end">
+                      <button type="button" onClick={() => setEditingNote(null)} className="px-3 py-1.5 text-sm text-stone-400 hover:text-stone-200">Cancel</button>
+                      <button type="submit" disabled={submitting} className="px-4 py-1.5 text-sm bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-stone-900 font-semibold rounded-lg">
+                        {submitting ? 'Saving…' : 'Save'}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
 
 const COIN_LABELS: Array<{ key: keyof Currency; label: string; color: string }> = [
   { key: 'pp', label: 'PP', color: 'text-purple-400' },
@@ -375,7 +597,7 @@ export function CharacterSheetPage() {
 
       {/* Tabs */}
       <div className="border-b border-stone-800 px-6 flex gap-1">
-        {(['sheet', 'inventory', 'spells'] as Tab[]).map((tab) => (
+        {(['sheet', 'inventory', 'spells', 'notes'] as Tab[]).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -822,6 +1044,12 @@ export function CharacterSheetPage() {
               </section>
             </>
           ) : null}
+        </main>
+      )}
+
+      {activeTab === 'notes' && (
+        <main className="max-w-4xl mx-auto px-6 py-8">
+          <NotesTab characterId={char.id} />
         </main>
       )}
 

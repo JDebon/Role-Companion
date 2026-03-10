@@ -8,6 +8,8 @@ import { CustomContentPage } from './pages/CustomContentPage'
 import { EncounterListPage } from './pages/EncounterListPage'
 import { EncounterRunnerPage } from './pages/EncounterRunnerPage'
 import { NpcPage } from './pages/NpcPage'
+import { SessionLogPage } from './pages/SessionLogPage'
+import { DmNotesPage } from './pages/DmNotesPage'
 import { ProtectedRoute } from './components/ProtectedRoute'
 
 export default function App() {
@@ -60,6 +62,22 @@ export default function App() {
         element={
           <ProtectedRoute>
             <NpcPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/campaigns/:id/session-logs"
+        element={
+          <ProtectedRoute>
+            <SessionLogPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/campaigns/:id/dm-notes"
+        element={
+          <ProtectedRoute>
+            <DmNotesPage />
           </ProtectedRoute>
         }
       />

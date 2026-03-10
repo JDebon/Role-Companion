@@ -592,3 +592,153 @@ export function resetEncounter(
 ): Promise<{ status: string; round: number }> {
   return request(`/campaigns/${campaignId}/encounters/${encounterId}/reset`, { method: 'POST' })
 }
+
+// ── Notes ─────────────────────────────────────────────────────────────────────
+
+export interface NoteSummary {
+  id: string
+  title: string
+  isRevealed: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface NoteDetail {
+  id: string
+  campaignId: string
+  authorId: string
+  characterId: string | null
+  title: string
+  content: string
+  isRevealed: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CreateNoteInput {
+  title: string
+  content?: string
+}
+
+export interface PatchNoteInput {
+  title?: string
+  content?: string
+}
+
+export function getCharacterNotes(characterId: string, q?: string): Promise<NoteSummary[]> {
+  const qs = q ? `?q=${encodeURIComponent(q)}` : ''
+  return request(`/characters/${characterId}/notes${qs}`)
+}
+
+export function getCharacterNote(characterId: string, noteId: string): Promise<NoteDetail> {
+  return request(`/characters/${characterId}/notes/${noteId}`)
+}
+
+export function createCharacterNote(characterId: string, data: CreateNoteInput): Promise<{ id: string; title: string; isRevealed: boolean }> {
+  return request(`/characters/${characterId}/notes`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
+
+export function patchCharacterNote(characterId: string, noteId: string, data: PatchNoteInput): Promise<NoteDetail> {
+  return request(`/characters/${characterId}/notes/${noteId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  })
+}
+
+export function deleteCharacterNote(characterId: string, noteId: string): Promise<void> {
+  return request(`/characters/${characterId}/notes/${noteId}`, { method: 'DELETE' })
+}
+
+export function getRevealedNotes(campaignId: string, q?: string): Promise<NoteDetail[]> {
+  const qs = q ? `?q=${encodeURIComponent(q)}` : ''
+  return request(`/campaigns/${campaignId}/notes/revealed${qs}`)
+}
+
+export function getCampaignNotes(campaignId: string, q?: string): Promise<NoteDetail[]> {
+  const qs = q ? `?q=${encodeURIComponent(q)}` : ''
+  return request(`/campaigns/${campaignId}/notes${qs}`)
+}
+
+export function createCampaignNote(campaignId: string, data: CreateNoteInput): Promise<{ id: string; title: string; isRevealed: boolean }> {
+  return request(`/campaigns/${campaignId}/notes`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
+
+export function patchCampaignNote(campaignId: string, noteId: string, data: PatchNoteInput): Promise<NoteDetail> {
+  return request(`/campaigns/${campaignId}/notes/${noteId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  })
+}
+
+export function deleteCampaignNote(campaignId: string, noteId: string): Promise<void> {
+  return request(`/campaigns/${campaignId}/notes/${noteId}`, { method: 'DELETE' })
+}
+
+export function revealNote(campaignId: string, noteId: string): Promise<{ id: string; isRevealed: boolean }> {
+  return request(`/campaigns/${campaignId}/notes/${noteId}/reveal`, { method: 'POST' })
+}
+
+// ── Session Logs ──────────────────────────────────────────────────────────────
+
+export interface SessionLogSummary {
+  id: string
+  sessionNumber: number
+  title: string
+  isPinned: boolean
+  createdAt: string
+}
+
+export interface SessionLogDetail extends SessionLogSummary {
+  campaignId: string
+  authorId: string
+  content: string
+  updatedAt: string
+}
+
+export interface CreateSessionLogInput {
+  sessionNumber: number
+  title: string
+  content?: string
+}
+
+export interface PatchSessionLogInput {
+  title?: string
+  content?: string
+}
+
+export function getSessionLogs(campaignId: string, q?: string): Promise<SessionLogSummary[]> {
+  const qs = q ? `?q=${encodeURIComponent(q)}` : ''
+  return request(`/campaigns/${campaignId}/session-logs${qs}`)
+}
+
+export function getSessionLog(campaignId: string, logId: string): Promise<SessionLogDetail> {
+  return request(`/campaigns/${campaignId}/session-logs/${logId}`)
+}
+
+export function createSessionLog(campaignId: string, data: CreateSessionLogInput): Promise<SessionLogDetail> {
+  return request(`/campaigns/${campaignId}/session-logs`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
+
+export function patchSessionLog(campaignId: string, logId: string, data: PatchSessionLogInput): Promise<SessionLogDetail> {
+  return request(`/campaigns/${campaignId}/session-logs/${logId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  })
+}
+
+export function deleteSessionLog(campaignId: string, logId: string): Promise<void> {
+  return request(`/campaigns/${campaignId}/session-logs/${logId}`, { method: 'DELETE' })
+}
+
+export function pinSessionLog(campaignId: string, logId: string): Promise<{ isPinned: boolean }> {
+  return request(`/campaigns/${campaignId}/session-logs/${logId}/pin`, { method: 'POST' })
+}
