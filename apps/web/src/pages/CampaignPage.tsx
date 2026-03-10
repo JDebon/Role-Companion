@@ -208,7 +208,7 @@ function CreateCharForm({ campaignId, onCreated, onClose }: CreateCharFormProps)
             <button
               type="submit"
               disabled={submitting}
-              className="px-5 py-2 text-sm bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-stone-900 font-semibold rounded-lg transition-colors"
+              className="px-5 py-2 text-sm bg-crimson-500 hover:bg-crimson-400 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors"
             >
               {submitting ? 'Creating…' : 'Create'}
             </button>
@@ -297,12 +297,12 @@ export function CampaignPage() {
         ) : (
           <>
             {/* Characters */}
-            <section className="bg-stone-900 border border-stone-800 rounded-xl p-6">
+            <section className="bg-stone-900 border border-stone-700 rounded-xl p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold">Characters ({characters.length})</h2>
                 <button
                   onClick={() => setShowCreateChar(true)}
-                  className="px-3 py-1.5 text-sm bg-amber-500 hover:bg-amber-400 text-stone-900 font-semibold rounded-lg transition-colors"
+                  className="px-3 py-1.5 text-sm bg-crimson-500 hover:bg-crimson-400 text-white font-semibold rounded-lg transition-colors"
                 >
                   + New Character
                 </button>
@@ -346,21 +346,21 @@ export function CampaignPage() {
 
             {/* DM Tools — Encounters + NPCs (DM only) */}
             {isDM && (
-              <section className="bg-stone-900 border border-stone-800 rounded-xl p-6">
+              <section className="bg-stone-900 border border-stone-700 rounded-xl p-6">
                 <h2 className="text-lg font-semibold mb-4">DM Tools</h2>
                 <div className="flex gap-3">
                   <button
                     onClick={() => navigate(`/campaigns/${id}/encounters`)}
-                    className="flex-1 px-4 py-3 bg-stone-800 hover:bg-stone-700 rounded-xl transition-colors text-left"
+                    className="flex-1 px-4 py-3 bg-stone-800 hover:bg-stone-700 border border-stone-700 hover:border-stone-600 rounded-xl transition-colors text-left"
                   >
-                    <p className="font-semibold text-sm">⚔ Encounters</p>
+                    <p className="font-semibold text-sm text-amber-400">Encounters</p>
                     <p className="text-xs text-stone-400 mt-0.5">Run combat with initiative tracking</p>
                   </button>
                   <button
                     onClick={() => navigate(`/campaigns/${id}/npcs`)}
-                    className="flex-1 px-4 py-3 bg-stone-800 hover:bg-stone-700 rounded-xl transition-colors text-left"
+                    className="flex-1 px-4 py-3 bg-stone-800 hover:bg-stone-700 border border-stone-700 hover:border-stone-600 rounded-xl transition-colors text-left"
                   >
-                    <p className="font-semibold text-sm">👥 NPCs</p>
+                    <p className="font-semibold text-sm text-amber-400">NPCs</p>
                     <p className="text-xs text-stone-400 mt-0.5">Manage campaign NPCs</p>
                   </button>
                 </div>
@@ -368,7 +368,7 @@ export function CampaignPage() {
             )}
 
             {/* Custom Content */}
-            <section className="bg-stone-900 border border-stone-800 rounded-xl p-6">
+            <section className="bg-stone-900 border border-stone-700 rounded-xl p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold">Custom Content</h2>
                 <button
@@ -385,7 +385,7 @@ export function CampaignPage() {
 
             {/* Invite code (DM only) */}
             {isDM && (
-              <section className="bg-stone-900 border border-stone-800 rounded-xl p-6">
+              <section className="bg-stone-900 border border-stone-700 rounded-xl p-6">
                 <h2 className="text-lg font-semibold mb-4">Invite Code</h2>
                 <div className="flex items-center gap-3">
                   <span className="flex-1 font-mono text-2xl tracking-widest text-amber-300 bg-stone-800 px-4 py-2 rounded-lg">
@@ -402,7 +402,7 @@ export function CampaignPage() {
                   <button
                     onClick={handleRegenerate}
                     disabled={regenLoading}
-                    className="px-3 py-2 text-sm bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-stone-900 font-semibold rounded-lg transition-colors"
+                    className="px-3 py-2 text-sm bg-crimson-500 hover:bg-crimson-400 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors"
                   >
                     {regenLoading ? '…' : inviteCode ? 'Regenerate' : 'Show code'}
                   </button>
@@ -416,7 +416,7 @@ export function CampaignPage() {
             )}
 
             {/* Members list */}
-            <section className="bg-stone-900 border border-stone-800 rounded-xl p-6">
+            <section className="bg-stone-900 border border-stone-700 rounded-xl p-6">
               <h2 className="text-lg font-semibold mb-4">
                 Members ({members.length})
               </h2>
@@ -469,7 +469,7 @@ export function CampaignPage() {
       {/* Remove confirmation dialog */}
       {removeTarget && (
         <div
-          className="fixed inset-0 bg-black/60 flex items-center justify-center px-4 z-50"
+          className="fixed inset-0 bg-black/70 flex items-center justify-center px-4 z-50"
           onClick={(e) => e.target === e.currentTarget && setRemoveTarget(null)}
         >
           <div className="bg-stone-900 border border-stone-700 rounded-xl p-6 w-full max-w-sm">

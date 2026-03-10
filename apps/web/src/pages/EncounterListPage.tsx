@@ -67,7 +67,7 @@ export function EncounterListPage() {
         <div className="ml-auto">
           <button
             onClick={() => setShowCreate(true)}
-            className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-stone-900 font-semibold text-sm rounded-lg transition-colors"
+            className="px-4 py-2 bg-crimson-500 hover:bg-crimson-400 text-white font-semibold text-sm rounded-lg transition-colors"
           >
             + New Encounter
           </button>
@@ -82,7 +82,7 @@ export function EncounterListPage() {
             <p className="text-stone-500 mb-4">No encounters yet.</p>
             <button
               onClick={() => setShowCreate(true)}
-              className="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-stone-900 font-semibold rounded-lg"
+              className="px-5 py-2 bg-crimson-500 hover:bg-crimson-400 text-white font-semibold rounded-lg"
             >
               Create First Encounter
             </button>
@@ -92,7 +92,7 @@ export function EncounterListPage() {
             {encounters.map(enc => (
               <li
                 key={enc.id}
-                className="bg-stone-900 border border-stone-800 rounded-xl p-4 flex items-center gap-4"
+                className="bg-stone-900 border border-stone-700 rounded-xl p-4 flex items-center gap-4"
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-1">
@@ -156,7 +156,7 @@ export function EncounterListPage() {
                 <button
                   type="submit"
                   disabled={creating}
-                  className="px-5 py-2 text-sm bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-stone-900 font-semibold rounded-lg transition-colors"
+                  className="px-5 py-2 text-sm bg-crimson-500 hover:bg-crimson-400 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors"
                 >
                   {creating ? 'Creating…' : 'Create'}
                 </button>

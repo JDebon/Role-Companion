@@ -399,7 +399,7 @@ export function CharacterSheetPage() {
           ) : inventory ? (
             <>
               {/* Carry weight bar */}
-              <section className="bg-stone-900 border border-stone-800 rounded-xl p-5">
+              <section className="bg-stone-900 border border-stone-700 rounded-xl p-5">
                 <div className="flex items-baseline justify-between mb-2">
                   <h2 className="text-sm font-semibold uppercase tracking-widest text-stone-400">Carry Weight</h2>
                   <span className="text-sm font-mono text-stone-300">
@@ -421,7 +421,7 @@ export function CharacterSheetPage() {
               </section>
 
               {/* Currency */}
-              <section className="bg-stone-900 border border-stone-800 rounded-xl p-5">
+              <section className="bg-stone-900 border border-stone-700 rounded-xl p-5">
                 <h2 className="text-sm font-semibold uppercase tracking-widest text-stone-400 mb-4">Currency</h2>
                 <div className="grid grid-cols-5 gap-3">
                   {COIN_LABELS.map(({ key, label, color }) => (
@@ -450,7 +450,7 @@ export function CharacterSheetPage() {
               </section>
 
               {/* Item list */}
-              <section className="bg-stone-900 border border-stone-800 rounded-xl p-5">
+              <section className="bg-stone-900 border border-stone-700 rounded-xl p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-sm font-semibold uppercase tracking-widest text-stone-400">
                     Items ({inventory.items.length})
@@ -618,7 +618,7 @@ export function CharacterSheetPage() {
           ) : spellsData ? (
             <>
               {/* Concentration tracker */}
-              <section className="bg-stone-900 border border-stone-800 rounded-xl p-5">
+              <section className="bg-stone-900 border border-stone-700 rounded-xl p-5">
                 <h2 className="text-sm font-semibold uppercase tracking-widest text-stone-400 mb-3">Concentration</h2>
                 {spellsData.concentration ? (
                   <div className="flex items-center gap-3">
@@ -640,7 +640,7 @@ export function CharacterSheetPage() {
               </section>
 
               {/* Spell slots */}
-              <section className="bg-stone-900 border border-stone-800 rounded-xl p-5">
+              <section className="bg-stone-900 border border-stone-700 rounded-xl p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-sm font-semibold uppercase tracking-widest text-stone-400">Spell Slots</h2>
                   {isOwner && (
@@ -732,7 +732,7 @@ export function CharacterSheetPage() {
               </section>
 
               {/* Spell list */}
-              <section className="bg-stone-900 border border-stone-800 rounded-xl p-5">
+              <section className="bg-stone-900 border border-stone-700 rounded-xl p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-sm font-semibold uppercase tracking-widest text-stone-400">
                     Spells ({spellsData.spells.length})
@@ -830,7 +830,7 @@ export function CharacterSheetPage() {
         {/* Top row: Ability scores + Combat stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Ability scores */}
-          <section className="bg-stone-900 border border-stone-800 rounded-xl p-5">
+          <section className="bg-stone-900 border border-stone-700 rounded-xl p-5">
             <h2 className="text-sm font-semibold uppercase tracking-widest text-stone-400 mb-4">Ability Scores</h2>
             <div className="grid grid-cols-3 gap-3">
               {Object.entries(char.abilityScores).map(([key, val]) => (
@@ -844,7 +844,7 @@ export function CharacterSheetPage() {
           </section>
 
           {/* Combat stats */}
-          <section className="bg-stone-900 border border-stone-800 rounded-xl p-5 space-y-4">
+          <section className="bg-stone-900 border border-stone-700 rounded-xl p-5 space-y-4">
             <h2 className="text-sm font-semibold uppercase tracking-widest text-stone-400 mb-2">Combat</h2>
 
             {/* HP bar */}
@@ -927,7 +927,7 @@ export function CharacterSheetPage() {
         {/* Saving throws + Skills */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Saving throws */}
-          <section className="bg-stone-900 border border-stone-800 rounded-xl p-5">
+          <section className="bg-stone-900 border border-stone-700 rounded-xl p-5">
             <h2 className="text-sm font-semibold uppercase tracking-widest text-stone-400 mb-3">Saving Throws</h2>
             <ul className="space-y-1.5">
               {Object.entries(char.savingThrows).map(([key, val]) => (
@@ -941,7 +941,7 @@ export function CharacterSheetPage() {
           </section>
 
           {/* Skills */}
-          <section className="bg-stone-900 border border-stone-800 rounded-xl p-5">
+          <section className="bg-stone-900 border border-stone-700 rounded-xl p-5">
             <h2 className="text-sm font-semibold uppercase tracking-widest text-stone-400 mb-3">Skills</h2>
             <ul className="space-y-1">
               {Object.entries(char.skills).map(([key, val]) => (
@@ -957,7 +957,7 @@ export function CharacterSheetPage() {
 
         {/* Traits & Features */}
         {char.traits.length > 0 && (
-          <section className="bg-stone-900 border border-stone-800 rounded-xl p-5">
+          <section className="bg-stone-900 border border-stone-700 rounded-xl p-5">
             <h2 className="text-sm font-semibold uppercase tracking-widest text-stone-400 mb-3">Features & Traits</h2>
             <ul className="space-y-1">
               {char.traits.map((t, i) => (
@@ -972,7 +972,7 @@ export function CharacterSheetPage() {
 
         {/* Backstory */}
         {char.backstory && (
-          <section className="bg-stone-900 border border-stone-800 rounded-xl p-5">
+          <section className="bg-stone-900 border border-stone-700 rounded-xl p-5">
             <h2 className="text-sm font-semibold uppercase tracking-widest text-stone-400 mb-3">Backstory</h2>
             <p className="text-sm text-stone-300 leading-relaxed whitespace-pre-wrap">{char.backstory}</p>
           </section>

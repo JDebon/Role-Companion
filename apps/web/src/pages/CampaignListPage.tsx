@@ -93,7 +93,7 @@ export function CampaignListPage() {
             </button>
             <button
               onClick={() => setModal('create')}
-              className="px-4 py-2 text-sm bg-amber-500 hover:bg-amber-400 text-stone-900 font-semibold rounded-lg transition-colors"
+              className="px-4 py-2 text-sm bg-crimson-500 hover:bg-crimson-400 text-white font-semibold rounded-lg transition-colors"
             >
               New Campaign
             </button>
@@ -113,7 +113,7 @@ export function CampaignListPage() {
               <li key={c.id}>
                 <button
                   onClick={() => navigate(`/campaigns/${c.id}`)}
-                  className="w-full text-left px-5 py-4 bg-stone-900 hover:bg-stone-800 border border-stone-800 hover:border-stone-700 rounded-xl transition-colors flex items-center justify-between"
+                  className="w-full text-left px-5 py-4 bg-stone-900 hover:bg-stone-800 border border-stone-700 hover:border-stone-600 rounded-xl transition-colors flex items-center justify-between"
                 >
                   <div>
                     <p className="font-medium text-stone-100">{c.name}</p>
@@ -166,7 +166,7 @@ export function CampaignListPage() {
               <button
                 type="submit"
                 disabled={createLoading || !createName.trim()}
-                className="px-4 py-2 text-sm bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-stone-900 font-semibold rounded-lg transition-colors"
+                className="px-4 py-2 text-sm bg-crimson-500 hover:bg-crimson-400 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors"
               >
                 {createLoading ? 'Creating…' : 'Create'}
               </button>
@@ -204,7 +204,7 @@ export function CampaignListPage() {
               <button
                 type="submit"
                 disabled={joinLoading || !joinCode.trim()}
-                className="px-4 py-2 text-sm bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-stone-900 font-semibold rounded-lg transition-colors"
+                className="px-4 py-2 text-sm bg-crimson-500 hover:bg-crimson-400 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors"
               >
                 {joinLoading ? 'Joining…' : 'Join'}
               </button>
@@ -227,7 +227,7 @@ function Modal({
 }) {
   return (
     <div
-      className="fixed inset-0 bg-black/60 flex items-center justify-center px-4 z-50"
+      className="fixed inset-0 bg-black/70 flex items-center justify-center px-4 z-50"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div className="bg-stone-900 border border-stone-700 rounded-xl p-6 w-full max-w-md">

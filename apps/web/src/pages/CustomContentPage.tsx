@@ -252,7 +252,7 @@ function EntityModal({
                     type="button"
                     onClick={() => setEntityType(t)}
                     className={`px-3 py-1.5 text-sm rounded-lg font-medium transition-colors ${
-                      entityType === t ? 'bg-amber-500 text-stone-900' : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
+                      entityType === t ? 'bg-crimson-500 text-white' : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
                     }`}
                   >
                     {TAB_LABELS[t]}
@@ -308,7 +308,7 @@ function EntityModal({
             </button>
             <button
               type="submit" disabled={submitting}
-              className="px-4 py-2 text-sm bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-stone-900 font-semibold rounded-lg transition-colors"
+              className="px-4 py-2 text-sm bg-crimson-500 hover:bg-crimson-400 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors"
             >
               {submitting ? '…' : isEdit ? 'Save' : 'Create'}
             </button>
@@ -458,7 +458,7 @@ export function CustomContentPage() {
         {isDM && (
           <button
             onClick={() => setShowCreate(true)}
-            className="ml-auto px-3 py-1.5 text-sm bg-amber-500 hover:bg-amber-400 text-stone-900 font-semibold rounded-lg transition-colors"
+            className="ml-auto px-3 py-1.5 text-sm bg-crimson-500 hover:bg-crimson-400 text-white font-semibold rounded-lg transition-colors"
           >
             + New
           </button>
@@ -467,7 +467,7 @@ export function CustomContentPage() {
 
       <main className="max-w-2xl mx-auto px-6 py-8">
         {/* Tabs */}
-        <div className="flex gap-1 mb-6 bg-stone-900 border border-stone-800 rounded-xl p-1">
+        <div className="flex gap-1 mb-6 bg-stone-900 border border-stone-700 rounded-xl p-1">
           {(['monster', 'item', 'rule'] as Tab[]).map(t => (
             <button
               key={t}
@@ -484,7 +484,7 @@ export function CustomContentPage() {
         {loading ? (
           <p className="text-stone-400">Loading…</p>
         ) : filtered.length === 0 ? (
-          <div className="bg-stone-900 border border-stone-800 rounded-xl p-8 text-center">
+          <div className="bg-stone-900 border border-stone-700 rounded-xl p-8 text-center">
             <p className="text-stone-500 text-sm">
               No custom {TAB_LABELS[tab].toLowerCase()} yet.
               {isDM && ' Click "+ New" to create one.'}
@@ -496,7 +496,7 @@ export function CustomContentPage() {
               <li key={entity.id}>
                 <button
                   onClick={() => openDetail(entity)}
-                  className="w-full flex items-center gap-3 p-4 bg-stone-900 border border-stone-800 hover:border-stone-600 rounded-xl transition-colors text-left"
+                  className="w-full flex items-center gap-3 p-4 bg-stone-900 border border-stone-700 hover:border-stone-600 rounded-xl transition-colors text-left"
                 >
                   <span className={`text-xs font-semibold px-2 py-0.5 rounded-full flex-shrink-0 ${TYPE_COLORS[entity.entityType as Tab]}`}>
                     {entity.entityType}

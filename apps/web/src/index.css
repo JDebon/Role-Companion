@@ -1,1 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
 @import "tailwindcss";
+
+@theme {
+  /* ── Fantasy fonts ─────────────────────────────────────────────── */
+  --font-cinzel:  'Cinzel', Georgia, 'Times New Roman', serif;
+  --font-crimson: 'Crimson Text', Georgia, 'Times New Roman', serif;
+
+  /* ── Warm stone — leather & aged-wood tones ────────────────────── */
+  --color-stone-100: #f0e4d4;
+  --color-stone-200: #dcc8b0;
+  --color-stone-300: #c4a890;
+  --color-stone-400: #a08878;
+  --color-stone-500: #7d6558;
+  --color-stone-600: #5e4a3d;
+  --color-stone-700: #43322a;
+  --color-stone-800: #2d2118;
+  --color-stone-900: #1c1512;
+  --color-stone-950: #110d0a;
+
+  /* ── D&D Crimson — primary brand colour ────────────────────────── */
+  --color-crimson-300: #f07080;
+  --color-crimson-400: #e05068;
+  --color-crimson-500: #c41e3a;
+  --color-crimson-600: #9c1530;
+  --color-crimson-700: #7a0f25;
+
+  /* ── Richer amber — aged gold ───────────────────────────────────── */
+  --color-amber-300: #f5d060;
+  --color-amber-400: #d4a83c;
+  --color-amber-500: #b8922a;
+  --color-amber-600: #966e18;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-crimson);
+    line-height: 1.6;
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-cinzel);
+    letter-spacing: 0.02em;
+  }
+}

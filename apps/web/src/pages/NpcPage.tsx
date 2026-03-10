@@ -104,7 +104,7 @@ function NpcModal({ campaignId, existing, onSaved, onClose }: NpcModalProps) {
             <button
               type="submit"
               disabled={loading}
-              className="px-5 py-2 text-sm bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-stone-900 font-semibold rounded-lg"
+              className="px-5 py-2 text-sm bg-crimson-500 hover:bg-crimson-400 disabled:opacity-50 text-white font-semibold rounded-lg"
             >
               {loading ? 'Saving…' : existing ? 'Save' : 'Create'}
             </button>
@@ -162,7 +162,7 @@ export function NpcPage() {
           <div className="ml-auto">
             <button
               onClick={() => setShowCreate(true)}
-              className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-stone-900 font-semibold text-sm rounded-lg"
+              className="px-4 py-2 bg-crimson-500 hover:bg-crimson-400 text-white font-semibold text-sm rounded-lg"
             >
               + New NPC
             </button>
@@ -179,7 +179,7 @@ export function NpcPage() {
             {isDM && (
               <button
                 onClick={() => setShowCreate(true)}
-                className="px-5 py-2 bg-amber-500 hover:bg-amber-400 text-stone-900 font-semibold rounded-lg"
+                className="px-5 py-2 bg-crimson-500 hover:bg-crimson-400 text-white font-semibold rounded-lg"
               >
                 Create First NPC
               </button>
@@ -190,7 +190,7 @@ export function NpcPage() {
             {npcs.map(npc => (
               <li
                 key={npc.id}
-                className="bg-stone-900 border border-stone-800 rounded-xl p-4"
+                className="bg-stone-900 border border-stone-700 rounded-xl p-4"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
