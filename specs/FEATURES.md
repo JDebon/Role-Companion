@@ -58,6 +58,7 @@
 | 010 | Death Saves Tracker | SPEC-010 | MUST | 📋 Planned | Success/fail tracking, auto-stabilize on 3 successes; integrates with combat tracker |
 | 011 | Rest Tracker | SPEC-011 | SHOULD | 📋 Planned | Short/long rest resource recovery: HP, spell slots, class features |
 | 014 | Spell Slots Tracker | SPEC-012 | MUST | 📋 Planned | Amount of Spell Slots the character has by level; integrate an optional feature to change the display to Spell Points rule if needed |
+| 020 | Reveal to Player | SPEC-013 | MUST | 📋 Planned | The DM notes must now have a button or option to reveal a note only for a selected player or players, and not only a button to reveal for all the party |
 
 ---
 
@@ -72,6 +73,7 @@
 | 015 | Rules Reference | SPEC-015 | SHOULD | 📋 Planned | Searchable SRD rules quick-lookup for common mechanics |
 | 016 | Realtime Session Mode | SPEC-016 | MAY | 📋 Planned | Live HP updates, initiative order via WebSocket; for active play sessions |
 | 017 | Campaign Timeline | SPEC-017 | MAY | 📋 Planned | Shared chronological event log visible to all campaign members |
+| 019 | Sorting Databases | SPEC-014 | MUST | 📋 Planned | Must sort all items, monsters, etc. by book these come from (ex. Player's Handbook, Dungeon Master's Guide, Xanathar's Guide to Everiting, etc.) |
 | 018 | Custom Rules | SPEC-018 | MAY | 📋 Planned | Display a check-list with all the availabe books and rules for the player or dm to enable or disable, alowing the dm to show or use specific content |
 
 ---
