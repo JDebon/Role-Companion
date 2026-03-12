@@ -24,6 +24,7 @@ Campaigns span many sessions over months or years. Without a shared record, play
 - [ ] Allow any campaign member to write private notes attached to their character.
 - [ ] Allow the DM to write session summaries visible to the whole party.
 - [ ] Allow the DM to create notes and selectively reveal them to the party.
+- [ ] Allow the DM to reveal notes to selected party members or whole party.
 - [ ] Allow members to search their notes by keyword.
 
 ### 1.4 Non-Goals

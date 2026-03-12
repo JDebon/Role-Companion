@@ -45,6 +45,7 @@
 | 006 | Custom Content | [SPEC-006](./SPEC-006-custom-content/SPEC-006-custom-content.md) | MUST | 🟢 Done | Clone + override SRD entities or create from scratch; DM-only creation |
 | 007 | DM Tools — NPCs & Encounter Tracker | [SPEC-007](./SPEC-007-dm-tools/SPEC-007-dm-tools.md) | MUST | 🟢 Done | NPC tracker, monster stat blocks, HP tracking per encounter, initiative order |
 | 008 | Notes & Session Logs | [SPEC-008](./SPEC-008-notes-session-logs/SPEC-008-notes-session-logs.md) | MUST | ✅ Approved | Per-character private notes, shared session summaries, DM-selectively-revealed info |
+| 022 | Wolrd Setting and Lore | SPEC-009 | MUST | 📋 Planned | Integrating documents (PDF, Docx, .txt, etc.) that can be visited by the characters, DM-selectively-revealed sections and @ to characters |
 
 ---
 
@@ -54,7 +55,7 @@
 
 | Task ID | Feature | Spec | Priority | Status | Description |
 |---|---------|------|----------|--------|-------|
-| 009 | Condition Tracker | SPEC-009 | MUST | 📋 Planned | Poisoned, stunned, incapacitated, etc. with duration tracking per combatant |
+| 009 | Condition Tracker | SPEC-010 | MUST | 📋 Planned | Poisoned, stunned, incapacitated, etc. with duration tracking per combatant |
 | 010 | Death Saves Tracker | SPEC-010 | MUST | 📋 Planned | Success/fail tracking, auto-stabilize on 3 successes; integrates with combat tracker |
 | 011 | Rest Tracker | SPEC-011 | SHOULD | 📋 Planned | Short/long rest resource recovery: HP, spell slots, class features |
 | 014 | Spell Slots Tracker | SPEC-012 | MUST | 📋 Planned | Amount of Spell Slots the character has by level; integrate an optional feature to change the display to Spell Points rule if needed |
