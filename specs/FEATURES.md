@@ -75,6 +75,7 @@
 | 017 | Campaign Timeline | SPEC-017 | MAY | 📋 Planned | Shared chronological event log visible to all campaign members |
 | 019 | Sorting Databases | SPEC-014 | MUST | 📋 Planned | Must sort all items, monsters, etc. by book these come from (ex. Player's Handbook, Dungeon Master's Guide, Xanathar's Guide to Everiting, etc.) |
 | 018 | Custom Rules | SPEC-018 | MAY | 📋 Planned | Display a check-list with all the availabe books and rules for the player or dm to enable or disable, alowing the dm to show or use specific content |
+| 021 | New Rules Integration | SPEC-019 | SHOULD | 📋 Planned | Developing a system to integrate new functionalities corresponding to settings or rulebooks that are not part of the original SRD (ex. Durability Mechanics, Special Attacks, etc.) |
 
 ---
 
