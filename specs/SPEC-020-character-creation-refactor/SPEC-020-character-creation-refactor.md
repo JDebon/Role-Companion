@@ -23,14 +23,14 @@ The current "New Character" button opens a simple form that accepts free-text cl
 
 - [ ] Replace the inline "New Character" form with a dedicated creation tab/page.
 - [ ] Provide dropdown selectors for class, race, and background driven by the SRD tables.
-- [ ] Auto-suggest starting stats based on selected class (e.g., primary ability score, hit die).
+- [ ] Full character builder with automatic proficiency and feature population.
+- [ ] Multiclassing during creation.
 - [ ] Preserve the ability to create characters with custom (free-text) class/race/background names for homebrew.
 - [ ] Keep the creation flow completable in a single session without requiring multi-step save state.
 
 ### 1.4 Non-Goals
 
-- Full character builder with automatic proficiency and feature population — deferred.
-- Multiclassing during creation — deferred.
+- Auto-suggest starting stats based on selected class (e.g., primary ability score, hit die) — deferred.
 - Point-buy or standard array stat generation — deferred (manual entry only in this spec).
 - Automated level-up flow — deferred.
 
