@@ -8,6 +8,7 @@ import { spellsRouter } from './routes/spells.js'
 import { customContentRouter } from './routes/custom-content.js'
 import { encountersRouter, npcsRouter } from './routes/dm-tools.js'
 import { characterNotesRouter, campaignNotesRouter, sessionLogsRouter } from './routes/notes.js'
+import { loreRouter } from './routes/lore.js'
 
 const app = new Hono()
 
@@ -25,6 +26,7 @@ app.route('/api/v1/characters', spellsRouter)
 app.route('/api/v1/characters', characterNotesRouter)
 app.route('/api/v1/campaigns', campaignNotesRouter)
 app.route('/api/v1/campaigns', sessionLogsRouter)
+app.route('/api/v1/campaigns', loreRouter)
 app.route('/api/v1/compendium', compendiumRouter)
 
 export default app

@@ -373,3 +373,20 @@ export const sessionLogs = pgTable(
   },
   (t) => [unique().on(t.campaignId, t.sessionNumber)]
 )
+
+// ── World Setting & Lore Documents ────────────────────────────────────────────
+
+export const loreDocuments = pgTable('lore_documents', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  campaignId: uuid('campaign_id')
+    .notNull()
+    .references(() => campaigns.id, { onDelete: 'cascade' }),
+  authorId: uuid('author_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  title: varchar('title', { length: 200 }).notNull(),
+  content: text('content').notNull().default(''),
+  isPublished: boolean('is_published').notNull().default(false),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})

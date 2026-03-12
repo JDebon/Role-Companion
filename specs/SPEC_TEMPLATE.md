@@ -67,6 +67,7 @@ Requirements use the RFC 2119 keywords: **MUST**, **MUST NOT**, **SHOULD**, **SH
 | NFR-003 | Scalability     | The system SHOULD handle up to N concurrent users.      |
 | NFR-004 | Accessibility   | UI MUST conform to WCAG 2.1 Level AA.                   |
 | NFR-005 | Reliability     | Uptime MUST be ≥ 99.9% measured monthly.               |
+| NFR-FE  | Frontend Errors | Frontend pages MUST display an inline error message when page-load API calls fail. Pages MUST NOT silently redirect away on load errors (anti-pattern: `.catch(() => navigate(...))` hides the root cause and makes navigation appear broken). Redirect on catch is only permitted for definitive 401/403 responses. |
 
 ### 3.3 Constraints
 
@@ -159,6 +160,8 @@ Response:
 | Invalid input       | Return validation error with field detail | 400                |
 | Unauthorized        | Reject with auth error                    | 401                |
 | Resource not found  | Return not-found error                    | 404                |
+
+**Frontend rule:** Page-load errors MUST render an error message in the page body (`setError(...)`) rather than silently redirecting (`navigate(...)`). Only redirect on confirmed 401/403.
 
 ---
 

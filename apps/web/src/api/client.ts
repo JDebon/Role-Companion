@@ -742,3 +742,64 @@ export function deleteSessionLog(campaignId: string, logId: string): Promise<voi
 export function pinSessionLog(campaignId: string, logId: string): Promise<{ isPinned: boolean }> {
   return request(`/campaigns/${campaignId}/session-logs/${logId}/pin`, { method: 'POST' })
 }
+
+// ── Lore Documents ─────────────────────────────────────────────────────────────
+
+export interface LoreDocumentSummary {
+  id: string
+  title: string
+  isPublished: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface LoreDocumentDetail extends LoreDocumentSummary {
+  campaignId: string
+  authorId: string
+  content: string
+}
+
+export interface CreateLoreDocumentInput {
+  title: string
+  content?: string
+}
+
+export interface PatchLoreDocumentInput {
+  title?: string
+  content?: string
+  isPublished?: boolean
+}
+
+export function getLoreDocuments(campaignId: string, q?: string): Promise<LoreDocumentSummary[]> {
+  const qs = q ? `?q=${encodeURIComponent(q)}` : ''
+  return request(`/campaigns/${campaignId}/lore${qs}`)
+}
+
+export function getLoreDocument(campaignId: string, docId: string): Promise<LoreDocumentDetail> {
+  return request(`/campaigns/${campaignId}/lore/${docId}`)
+}
+
+export function createLoreDocument(
+  campaignId: string,
+  data: CreateLoreDocumentInput
+): Promise<{ id: string; title: string; isPublished: boolean }> {
+  return request(`/campaigns/${campaignId}/lore`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
+}
+
+export function patchLoreDocument(
+  campaignId: string,
+  docId: string,
+  data: PatchLoreDocumentInput
+): Promise<LoreDocumentDetail> {
+  return request(`/campaigns/${campaignId}/lore/${docId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  })
+}
+
+export function deleteLoreDocument(campaignId: string, docId: string): Promise<void> {
+  return request(`/campaigns/${campaignId}/lore/${docId}`, { method: 'DELETE' })
+}

@@ -10,6 +10,7 @@ import { EncounterRunnerPage } from './pages/EncounterRunnerPage'
 import { NpcPage } from './pages/NpcPage'
 import { SessionLogPage } from './pages/SessionLogPage'
 import { DmNotesPage } from './pages/DmNotesPage'
+import { LorePage } from './pages/LorePage'
 import { ProtectedRoute } from './components/ProtectedRoute'
 
 export default function App() {
@@ -78,6 +79,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <DmNotesPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/campaigns/:id/lore"
+        element={
+          <ProtectedRoute>
+            <LorePage />
           </ProtectedRoute>
         }
       />

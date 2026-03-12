@@ -4,7 +4,7 @@
 > Update this file first when adding, removing, or reprioritizing features.
 > Each feature must have a spec before implementation begins.
 
-**Last Updated:** 2026-03-10
+**Last Updated:** 2026-03-12
 
 ---
 
@@ -37,15 +37,15 @@
 
 ## Phase 2 — Core Gameplay
 
-> Spells, combat, and DM tooling. All done except SPEC-008.
+> Spells, combat, DM tooling, notes, and world lore. All done.
 
 | Task ID | Feature | Spec | Priority | Status | Description |
 |---|---------|------|----------|--------|-------|
 | 005 | Spell Management | [SPEC-005](./SPEC-005-spell-management/SPEC-005-spell-management.md) | MUST | 🟢 Done | Spell slots per level, spells known/prepared, concentration tracker |
 | 006 | Custom Content | [SPEC-006](./SPEC-006-custom-content/SPEC-006-custom-content.md) | MUST | 🟢 Done | Clone + override SRD entities or create from scratch; DM-only creation |
 | 007 | DM Tools — NPCs & Encounter Tracker | [SPEC-007](./SPEC-007-dm-tools/SPEC-007-dm-tools.md) | MUST | 🟢 Done | NPC tracker, monster stat blocks, HP tracking per encounter, initiative order |
-| 008 | Notes & Session Logs | [SPEC-008](./SPEC-008-notes-session-logs/SPEC-008-notes-session-logs.md) | MUST | ✅ Approved | Per-character private notes, shared session summaries, DM-selectively-revealed info |
-| 022 | Wolrd Setting and Lore | SPEC-009 | MUST | 📋 Planned | Integrating documents (PDF, Docx, .txt, etc.) that can be visited by the characters, DM-selectively-revealed sections and @ to characters |
+| 008 | Notes & Session Logs | [SPEC-008](./SPEC-008-notes-session-logs/SPEC-008-notes-session-logs.md) | MUST | 🟢 Done | Per-character private notes, shared session summaries, DM-selectively-revealed info |
+| 022 | World Setting and Lore | [SPEC-009](./SPEC-009-world-setting-lore/SPEC-009-world-setting-lore.md) | MUST | 🟢 Done | Lore documents (markdown) that can be visited by campaign members; DM controls visibility; future: PDF/Docx upload, section-level reveal, @ mentions |
 
 ---
 
