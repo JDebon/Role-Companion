@@ -32,6 +32,8 @@
 | 002 | SRD Compendium | [SPEC-002](./SPEC-002-srd-seeding/SPEC-002-srd-seeding.md) | MUST | 🟢 Done | 5e-database 2014 seeded locally; search spells, monsters, equipment, classes, races |
 | 003 | Character Sheet | [SPEC-003](./SPEC-003-character-sheet/SPEC-003-character-sheet.md) | MUST | 🟢 Done | Ability scores, HP, AC, skills, saving throws, proficiencies |
 | 004 | Inventory & Items | [SPEC-004](./SPEC-004-inventory-items/SPEC-004-inventory-items.md) | MUST | 🟢 Done | Item list, carry weight, currency (gp/sp/ep/cp), attunement, equipped toggle |
+| 023 | Campaigns & Lore by User | SPEC-010 | MUST | 📋 Planned | Change World Lore relation from Campaign to User, making the user able to make multiple campaigns with the same Lore as base |
+| 024 | Character Creation Refactor | SPEC-020 | MUST | 📋 Planned | Change New Character button to change to a new tab for a more deep character creation, with class, race and background selectors |
 
 ---
 
@@ -46,6 +48,7 @@
 | 007 | DM Tools — NPCs & Encounter Tracker | [SPEC-007](./SPEC-007-dm-tools/SPEC-007-dm-tools.md) | MUST | 🟢 Done | NPC tracker, monster stat blocks, HP tracking per encounter, initiative order |
 | 008 | Notes & Session Logs | [SPEC-008](./SPEC-008-notes-session-logs/SPEC-008-notes-session-logs.md) | MUST | 🟢 Done | Per-character private notes, shared session summaries, DM-selectively-revealed info |
 | 022 | World Setting and Lore | [SPEC-009](./SPEC-009-world-setting-lore/SPEC-009-world-setting-lore.md) | MUST | 🟢 Done | Lore documents (markdown) that can be visited by campaign members; DM controls visibility; future: PDF/Docx upload, section-level reveal, @ mentions |
+| 025 | Wiki Companion Feature | SPEC-021 | MUST | 📋 Planned | Creation of an internal database that players can access in search of information about classes, races, backgrounds, items, conditions, rules, and others. DMs may have the same wiki but with improved access to be able to see creatures and other sensitive content |
 
 ---
 
@@ -55,8 +58,8 @@
 
 | Task ID | Feature | Spec | Priority | Status | Description |
 |---|---------|------|----------|--------|-------|
-| 009 | Condition Tracker | SPEC-010 | MUST | 📋 Planned | Poisoned, stunned, incapacitated, etc. with duration tracking per combatant |
-| 010 | Death Saves Tracker | SPEC-010 | MUST | 📋 Planned | Success/fail tracking, auto-stabilize on 3 successes; integrates with combat tracker |
+| 009 | Condition Tracker | SPEC-011 | MUST | 📋 Planned | Poisoned, stunned, incapacitated, etc. with duration tracking per combatant |
+| 010 | Death Saves Tracker | SPEC-011 | MUST | 📋 Planned | Success/fail tracking, auto-stabilize on 3 successes; integrates with combat tracker |
 | 011 | Rest Tracker | SPEC-011 | SHOULD | 📋 Planned | Short/long rest resource recovery: HP, spell slots, class features |
 | 014 | Spell Slots Tracker | SPEC-012 | MUST | 📋 Planned | Amount of Spell Slots the character has by level; integrate an optional feature to change the display to Spell Points rule if needed |
 | 020 | Reveal to Player | SPEC-013 | MUST | 📋 Planned | The DM notes must now have a button or option to reveal a note only for a selected player or players, and not only a button to reveal for all the party |
