@@ -33,7 +33,7 @@
 | 003 | Character Sheet | [SPEC-003](./SPEC-003-character-sheet/SPEC-003-character-sheet.md) | MUST | 🟢 Done | Ability scores, HP, AC, skills, saving throws, proficiencies |
 | 004 | Inventory & Items | [SPEC-004](./SPEC-004-inventory-items/SPEC-004-inventory-items.md) | MUST | 🟢 Done | Item list, carry weight, currency (gp/sp/ep/cp), attunement, equipped toggle |
 | 023 | Campaigns & Lore by User | SPEC-010 | MUST | 📋 Planned | Change World Lore relation from Campaign to User, making the user able to make multiple campaigns with the same Lore as base |
-| 024 | Character Creation Refactor | SPEC-020 | MUST | 📋 Planned | Change New Character button to change to a new tab for a more deep character creatrion, with class, race and background selectors |
+| 024 | Character Creation Refactor | SPEC-020 | MUST | 📋 Planned | Change New Character button to change to a new tab for a more deep character creation, with class, race and background selectors |
 
 ---
 
@@ -48,7 +48,7 @@
 | 007 | DM Tools — NPCs & Encounter Tracker | [SPEC-007](./SPEC-007-dm-tools/SPEC-007-dm-tools.md) | MUST | 🟢 Done | NPC tracker, monster stat blocks, HP tracking per encounter, initiative order |
 | 008 | Notes & Session Logs | [SPEC-008](./SPEC-008-notes-session-logs/SPEC-008-notes-session-logs.md) | MUST | 🟢 Done | Per-character private notes, shared session summaries, DM-selectively-revealed info |
 | 022 | World Setting and Lore | [SPEC-009](./SPEC-009-world-setting-lore/SPEC-009-world-setting-lore.md) | MUST | 🟢 Done | Lore documents (markdown) that can be visited by campaign members; DM controls visibility; future: PDF/Docx upload, section-level reveal, @ mentions |
-| 025 | Wiki Companion Feature | SPEC-021 | MUST | 📋 Planned | Creatrion of an internal database that players can access in search of information about classes, races, backgrounds, items, conditions, rules, and others. DMs may have the same wiki but with improved access to be able to see creatures and other sensitive content |
+| 025 | Wiki Companion Feature | SPEC-021 | MUST | 📋 Planned | Creation of an internal database that players can access in search of information about classes, races, backgrounds, items, conditions, rules, and others. DMs may have the same wiki but with improved access to be able to see creatures and other sensitive content |
 
 ---
 
