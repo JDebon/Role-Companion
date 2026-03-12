@@ -4,7 +4,7 @@
 > Update this file first when adding, removing, or reprioritizing features.
 > Each feature must have a spec before implementation begins.
 
-**Last Updated:** 2026-03-10
+**Last Updated:** 2026-03-12
 
 ---
 
@@ -37,14 +37,15 @@
 
 ## Phase 2 — Core Gameplay
 
-> Spells, combat, and DM tooling. All done except SPEC-008.
+> Spells, combat, DM tooling, notes, and world lore. All done.
 
 | Task ID | Feature | Spec | Priority | Status | Description |
 |---|---------|------|----------|--------|-------|
 | 005 | Spell Management | [SPEC-005](./SPEC-005-spell-management/SPEC-005-spell-management.md) | MUST | 🟢 Done | Spell slots per level, spells known/prepared, concentration tracker |
 | 006 | Custom Content | [SPEC-006](./SPEC-006-custom-content/SPEC-006-custom-content.md) | MUST | 🟢 Done | Clone + override SRD entities or create from scratch; DM-only creation |
 | 007 | DM Tools — NPCs & Encounter Tracker | [SPEC-007](./SPEC-007-dm-tools/SPEC-007-dm-tools.md) | MUST | 🟢 Done | NPC tracker, monster stat blocks, HP tracking per encounter, initiative order |
-| 008 | Notes & Session Logs | [SPEC-008](./SPEC-008-notes-session-logs/SPEC-008-notes-session-logs.md) | MUST | ✅ Approved | Per-character private notes, shared session summaries, DM-selectively-revealed info |
+| 008 | Notes & Session Logs | [SPEC-008](./SPEC-008-notes-session-logs/SPEC-008-notes-session-logs.md) | MUST | 🟢 Done | Per-character private notes, shared session summaries, DM-selectively-revealed info |
+| 022 | World Setting and Lore | [SPEC-009](./SPEC-009-world-setting-lore/SPEC-009-world-setting-lore.md) | MUST | 🟢 Done | Lore documents (markdown) that can be visited by campaign members; DM controls visibility; future: PDF/Docx upload, section-level reveal, @ mentions |
 
 ---
 
@@ -54,7 +55,7 @@
 
 | Task ID | Feature | Spec | Priority | Status | Description |
 |---|---------|------|----------|--------|-------|
-| 009 | Condition Tracker | SPEC-009 | MUST | 📋 Planned | Poisoned, stunned, incapacitated, etc. with duration tracking per combatant |
+| 009 | Condition Tracker | SPEC-010 | MUST | 📋 Planned | Poisoned, stunned, incapacitated, etc. with duration tracking per combatant |
 | 010 | Death Saves Tracker | SPEC-010 | MUST | 📋 Planned | Success/fail tracking, auto-stabilize on 3 successes; integrates with combat tracker |
 | 011 | Rest Tracker | SPEC-011 | SHOULD | 📋 Planned | Short/long rest resource recovery: HP, spell slots, class features |
 | 014 | Spell Slots Tracker | SPEC-012 | MUST | 📋 Planned | Amount of Spell Slots the character has by level; integrate an optional feature to change the display to Spell Points rule if needed |
@@ -75,6 +76,7 @@
 | 017 | Campaign Timeline | SPEC-017 | MAY | 📋 Planned | Shared chronological event log visible to all campaign members |
 | 019 | Sorting Databases | SPEC-014 | MUST | 📋 Planned | Must sort all items, monsters, etc. by book these come from (ex. Player's Handbook, Dungeon Master's Guide, Xanathar's Guide to Everiting, etc.) |
 | 018 | Custom Rules | SPEC-018 | MAY | 📋 Planned | Display a check-list with all the availabe books and rules for the player or dm to enable or disable, alowing the dm to show or use specific content |
+| 021 | New Rules Integration | SPEC-019 | SHOULD | 📋 Planned | Developing a system to integrate new functionalities corresponding to settings or rulebooks that are not part of the original SRD (ex. Durability Mechanics, Special Attacks, etc.) |
 
 ---
 

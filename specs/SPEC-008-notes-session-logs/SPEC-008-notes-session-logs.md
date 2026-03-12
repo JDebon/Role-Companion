@@ -1,9 +1,9 @@
 # Spec: Notes & Session Logs
 
 **Spec ID:** SPEC-008
-**Status:** Draft
+**Status:** Approved
 **Created:** 2026-03-09
-**Last Updated:** 2026-03-09
+**Last Updated:** 2026-03-12
 **Author:** RoleCompanion Team
 **Reviewers:** —
 
@@ -21,10 +21,11 @@ Campaigns span many sessions over months or years. Without a shared record, play
 
 ### 1.3 Goals
 
-- [ ] Allow any campaign member to write private notes attached to their character.
-- [ ] Allow the DM to write session summaries visible to the whole party.
-- [ ] Allow the DM to create notes and selectively reveal them to the party.
-- [ ] Allow members to search their notes by keyword.
+- [x] Allow any campaign member to write private notes attached to their character.
+- [x] Allow the DM to write session summaries visible to the whole party.
+- [x] Allow the DM to create notes and selectively reveal them to the party.
+- [x] Allow the DM to reveal notes to selected party members or whole party.
+- [x] Allow members to search their notes by keyword.
 
 ### 1.4 Non-Goals
 
@@ -306,3 +307,4 @@ interface SessionLog {
 | Version | Date | Author | Summary |
 |---------|------|--------|---------|
 | 0.1 | 2026-03-09 | RoleCompanion Team | Initial draft |
+| 0.2 | 2026-03-12 | RoleCompanion Team | Status updated to Approved; implementation complete (all tasks done); selective reveal per-player tracked in SPEC-013 (Task 020) |

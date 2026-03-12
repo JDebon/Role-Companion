@@ -1,8 +1,8 @@
 # Implementation Plan — SPEC-008: Notes & Session Logs
 
 **Spec:** [SPEC-008-notes-session-logs.md](./SPEC-008-notes-session-logs.md)
-**Status:** Pending
-**Last Updated:** 2026-03-09
+**Status:** Done
+**Last Updated:** 2026-03-12
 
 ---
 
@@ -22,63 +22,63 @@ T-03–T-05 → T-10
 
 ### T-01 — Schema: notes, session_logs
 **Depends on:** SPEC-001 T-01
-**Status:** [ ] Pending
+**Status:** [x] Done
 
-- [ ] `notes`: id, campaign_id (FK), author_id (FK), character_id (nullable FK), title (varchar 200), content (text), is_revealed (bool, default false), created_at, updated_at.
-- [ ] `session_logs`: id, campaign_id (FK), author_id (FK), session_number (int), title (varchar 200), content (text), is_pinned (bool, default false), created_at, updated_at.
-- [ ] UNIQUE constraint on (campaign_id, session_number).
+- [x] `notes`: id, campaign_id (FK), author_id (FK), character_id (nullable FK), title (varchar 200), content (text), is_revealed (bool, default false), created_at, updated_at.
+- [x] `session_logs`: id, campaign_id (FK), author_id (FK), session_number (int), title (varchar 200), content (text), is_pinned (bool, default false), created_at, updated_at.
+- [x] UNIQUE constraint on (campaign_id, session_number).
 
 ---
 
 ### T-02 — Migration
 **Depends on:** T-01
-**Status:** [ ] Pending
+**Status:** [x] Done
 
-- [ ] Run `drizzle-kit generate` and apply.
+- [x] Migration file `0007_notes_session_logs.sql` created and applied.
 
 ---
 
 ### T-03 — Character note CRUD + visibility guard
 **Depends on:** T-02
-**Status:** [ ] Pending
+**Status:** [x] Done
 
-- [ ] `GET /characters/:id/notes` — only author or DM; returns list without content.
-- [ ] `GET /characters/:id/notes/:noteId` — author or DM only.
-- [ ] `POST /characters/:id/notes` — character owner only.
-- [ ] `PATCH /characters/:id/notes/:noteId` — author only.
-- [ ] `DELETE /characters/:id/notes/:noteId` — author only.
+- [x] `GET /characters/:id/notes` — only author or DM; returns list without content.
+- [x] `GET /characters/:id/notes/:noteId` — author or DM only.
+- [x] `POST /characters/:id/notes` — character owner only.
+- [x] `PATCH /characters/:id/notes/:noteId` — author only.
+- [x] `DELETE /characters/:id/notes/:noteId` — author only.
 
 ---
 
 ### T-04 — DM notes + reveal endpoint
 **Depends on:** T-02
-**Status:** [ ] Pending
+**Status:** [x] Done
 
-- [ ] `POST /campaigns/:id/notes` — DM only, character_id = null.
-- [ ] `GET /campaigns/:id/notes/revealed` — all members; returns notes where is_revealed = true.
-- [ ] `POST /campaigns/:id/notes/:noteId/reveal` — DM only; set is_revealed = true; reject if already true (409).
+- [x] `POST /campaigns/:id/notes` — DM only, character_id = null.
+- [x] `GET /campaigns/:id/notes/revealed` — all members; returns notes where is_revealed = true.
+- [x] `POST /campaigns/:id/notes/:noteId/reveal` — DM only; set is_revealed = true; reject if already true (409).
 
 ---
 
 ### T-05 — Session log CRUD + pin endpoint
 **Depends on:** T-02
-**Status:** [ ] Pending
+**Status:** [x] Done
 
-- [ ] `GET /campaigns/:id/session-logs` — all members; sorted by session_number descending.
-- [ ] `GET /campaigns/:id/session-logs/:logId` — all members; full content.
-- [ ] `POST /campaigns/:id/session-logs` — DM only; reject duplicate session_number (409).
-- [ ] `PATCH /campaigns/:id/session-logs/:logId` — DM only.
-- [ ] `DELETE /campaigns/:id/session-logs/:logId` — DM only.
-- [ ] `POST /campaigns/:id/session-logs/:logId/pin` — DM only; unpin all others, pin this one.
+- [x] `GET /campaigns/:id/session-logs` — all members; sorted by session_number descending.
+- [x] `GET /campaigns/:id/session-logs/:logId` — all members; full content.
+- [x] `POST /campaigns/:id/session-logs` — DM only; reject duplicate session_number (409).
+- [x] `PATCH /campaigns/:id/session-logs/:logId` — DM only.
+- [x] `DELETE /campaigns/:id/session-logs/:logId` — DM only.
+- [x] `POST /campaigns/:id/session-logs/:logId/pin` — DM only; unpin all others, pin this one.
 
 ---
 
 ### T-06 — Keyword search
 **Depends on:** T-03, T-04, T-05
-**Status:** [ ] Pending
+**Status:** [x] Done
 
-- [ ] Add `?q=` query param to note list and session log list endpoints.
-- [ ] Implement with `ILIKE %q%` on title + content (PostgreSQL).
+- [x] Add `?q=` query param to note list and session log list endpoints.
+- [x] Implement with `ILIKE %q%` on title + content (PostgreSQL).
 
 ---
 
@@ -116,7 +116,7 @@ T-03–T-05 → T-10
 
 ### T-10 — Tests
 **Depends on:** T-03–T-05
-**Status:** [ ] Pending
+**Status:** [x] Done
 
-- [ ] Unit: visibility guard logic, duplicate session number rejection.
-- [ ] Integration: all acceptance criteria from SPEC-008.
+- [x] Unit: visibility guard logic, duplicate session number rejection.
+- [x] Integration: all acceptance criteria from SPEC-008.

@@ -57,17 +57,7 @@ pnpm --filter @rolecompanion/db studio         # open Drizzle Studio
 ### Database (`packages/db`)
 - Schema defined in `src/schema.ts` — single source of truth
 - Migrations are hand-authored SQL files in `migrations/` with a journal entry in `migrations/meta/_journal.json`
-- **Migration hash tracking:** Drizzle tracks applied migrations by SHA256 of the SQL file in `drizzle.__drizzle_migrations`. `drizzle-kit migrate` silently skips manually created migrations that lack a snapshot in `migrations/meta/` — so after adding a new migration, always apply it to the dev DB manually:
-  ```bash
-  # 1. Run the SQL
-  docker compose exec db psql -U rolecompanion -d rolecompanion -f packages/db/migrations/000X_name.sql
-
-  # 2. Register the hash
-  hash=$(sha256sum packages/db/migrations/000X_name.sql | awk '{print $1}')
-  docker compose exec db psql -U rolecompanion -d rolecompanion \
-    -c "INSERT INTO drizzle.__drizzle_migrations (hash, created_at) VALUES ('$hash', $(date +%s%3N));"
-  ```
-  Alternatively, `docker compose down -v && docker compose up` wipes the DB and reapplies all migrations from scratch.
+- **Migration tracking:** `pnpm --filter @rolecompanion/db migrate` runs `src/migrate.ts`, a custom script that reads `migrations/meta/_journal.json`, computes the SHA256 of each SQL file, and applies any that aren't yet recorded in `drizzle.__drizzle_migrations`. This runs automatically on every `docker compose up`. To add a new migration: create the SQL file + add a journal entry — the next startup will apply it.
 - SRD data lives in `fixtures/*.json` (committed). The seed is idempotent and runs on every `docker compose up` via `entrypoint.sh`
 
 ### Frontend (`apps/web`)

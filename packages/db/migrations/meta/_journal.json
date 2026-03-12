@@ -50,6 +50,20 @@
       "when": 1741824000000,
       "tag": "0006_dm_tools",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1741910400000,
+      "tag": "0007_notes_session_logs",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1741996800000,
+      "tag": "0008_lore_documents",
+      "breakpoints": true
     }
   ]
 }

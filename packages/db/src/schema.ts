@@ -334,3 +334,59 @@ export const combatants = pgTable('combatants', {
   isUnconscious: boolean('is_unconscious').notNull().default(false),
   sortOrder: integer('sort_order').notNull().default(0),
 })
+
+// ── Notes & Session Logs ──────────────────────────────────────────────────────
+
+export const notes = pgTable('notes', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  campaignId: uuid('campaign_id')
+    .notNull()
+    .references(() => campaigns.id, { onDelete: 'cascade' }),
+  authorId: uuid('author_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  characterId: uuid('character_id')
+    .references(() => characters.id, { onDelete: 'cascade' }),
+  title: varchar('title', { length: 200 }).notNull(),
+  content: text('content').notNull().default(''),
+  isRevealed: boolean('is_revealed').notNull().default(false),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})
+
+export const sessionLogs = pgTable(
+  'session_logs',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    campaignId: uuid('campaign_id')
+      .notNull()
+      .references(() => campaigns.id, { onDelete: 'cascade' }),
+    authorId: uuid('author_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    sessionNumber: integer('session_number').notNull(),
+    title: varchar('title', { length: 200 }).notNull(),
+    content: text('content').notNull().default(''),
+    isPinned: boolean('is_pinned').notNull().default(false),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  },
+  (t) => [unique().on(t.campaignId, t.sessionNumber)]
+)
+
+// ── World Setting & Lore Documents ────────────────────────────────────────────
+
+export const loreDocuments = pgTable('lore_documents', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  campaignId: uuid('campaign_id')
+    .notNull()
+    .references(() => campaigns.id, { onDelete: 'cascade' }),
+  authorId: uuid('author_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  title: varchar('title', { length: 200 }).notNull(),
+  content: text('content').notNull().default(''),
+  isPublished: boolean('is_published').notNull().default(false),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+})

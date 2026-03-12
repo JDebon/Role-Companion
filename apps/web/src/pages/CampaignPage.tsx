@@ -348,7 +348,7 @@ export function CampaignPage() {
             {isDM && (
               <section className="bg-stone-900 border border-stone-700 rounded-xl p-6">
                 <h2 className="text-lg font-semibold mb-4">DM Tools</h2>
-                <div className="flex gap-3">
+                <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => navigate(`/campaigns/${id}/encounters`)}
                     className="flex-1 px-4 py-3 bg-stone-800 hover:bg-stone-700 border border-stone-700 hover:border-stone-600 rounded-xl transition-colors text-left"
@@ -363,8 +363,63 @@ export function CampaignPage() {
                     <p className="font-semibold text-sm text-amber-400">NPCs</p>
                     <p className="text-xs text-stone-400 mt-0.5">Manage campaign NPCs</p>
                   </button>
+                  <button
+                    onClick={() => navigate(`/campaigns/${id}/session-logs`)}
+                    className="px-4 py-3 bg-stone-800 hover:bg-stone-700 rounded-xl transition-colors text-left"
+                  >
+                    <p className="font-semibold text-sm">Session Logs</p>
+                    <p className="text-xs text-stone-400 mt-0.5">Record and share session recaps</p>
+                  </button>
+                  <button
+                    onClick={() => navigate(`/campaigns/${id}/dm-notes`)}
+                    className="px-4 py-3 bg-stone-800 hover:bg-stone-700 rounded-xl transition-colors text-left"
+                  >
+                    <p className="font-semibold text-sm">Notes</p>
+                    <p className="text-xs text-stone-400 mt-0.5">Private DM notes and revealed lore</p>
+                  </button>
+                  <button
+                    onClick={() => navigate(`/campaigns/${id}/lore`)}
+                    className="px-4 py-3 bg-stone-800 hover:bg-stone-700 rounded-xl transition-colors text-left"
+                  >
+                    <p className="font-semibold text-sm">World Lore</p>
+                    <p className="text-xs text-stone-400 mt-0.5">Author and publish world-building documents</p>
+                  </button>
                 </div>
               </section>
+            )}
+
+            {/* Notes & Lore — visible to players too */}
+            {!isDM && (
+              <>
+                <section className="bg-stone-900 border border-stone-800 rounded-xl p-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <h2 className="text-lg font-semibold">Notes</h2>
+                    <button
+                      onClick={() => navigate(`/campaigns/${id}/dm-notes`)}
+                      className="px-3 py-1.5 text-sm bg-stone-700 hover:bg-stone-600 text-stone-100 font-semibold rounded-lg transition-colors"
+                    >
+                      View Revealed Notes
+                    </button>
+                  </div>
+                  <p className="text-stone-500 text-sm">
+                    View lore and notes your DM has revealed to the party.
+                  </p>
+                </section>
+                <section className="bg-stone-900 border border-stone-800 rounded-xl p-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <h2 className="text-lg font-semibold">World Lore</h2>
+                    <button
+                      onClick={() => navigate(`/campaigns/${id}/lore`)}
+                      className="px-3 py-1.5 text-sm bg-stone-700 hover:bg-stone-600 text-stone-100 font-semibold rounded-lg transition-colors"
+                    >
+                      Browse Lore
+                    </button>
+                  </div>
+                  <p className="text-stone-500 text-sm">
+                    Read world-building documents your DM has published.
+                  </p>
+                </section>
+              </>
             )}
 
             {/* Custom Content */}
