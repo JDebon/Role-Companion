@@ -138,7 +138,7 @@ function AddCombatantModal({ campaignId, encounterId, characters, onAdded, onClo
             <button
               type="submit"
               disabled={loading}
-              className="px-5 py-2 text-sm bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-stone-900 font-semibold rounded-lg"
+              className="px-5 py-2 text-sm bg-crimson-500 hover:bg-crimson-400 disabled:opacity-50 text-white font-semibold rounded-lg"
             >
               {loading ? 'Adding…' : 'Add'}
             </button>
@@ -347,7 +347,7 @@ export function EncounterRunnerPage() {
               <button
                 onClick={handleNextTurn}
                 disabled={actionLoading}
-                className="px-4 py-1.5 text-sm bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-stone-900 font-semibold rounded-lg transition-colors"
+                className="px-4 py-1.5 text-sm bg-crimson-500 hover:bg-crimson-400 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors"
               >
                 Next Turn →
               </button>
@@ -457,7 +457,7 @@ export function EncounterRunnerPage() {
           )}
 
           {selectedCombatant && encounter.status !== 'preparing' && (
-            <div className="bg-stone-900 border border-stone-800 rounded-xl p-6">
+            <div className="bg-stone-900 border border-stone-700 rounded-xl p-6">
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <h2 className={`text-xl font-bold ${selectedCombatant.isUnconscious ? 'line-through text-stone-500' : ''}`}>

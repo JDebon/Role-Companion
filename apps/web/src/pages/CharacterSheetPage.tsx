@@ -380,7 +380,7 @@ export function CharacterSheetPage() {
   }, [id, navigate])
 
   useEffect(() => {
-    if (activeTab !== 'inventory' || !id || inventory) return
+    if (!['inventory', 'sheet'].includes(activeTab) || !id || inventory) return
     setInvLoading(true)
     setInvError('')
     getInventory(id)
@@ -393,7 +393,7 @@ export function CharacterSheetPage() {
   }, [activeTab, id, inventory])
 
   useEffect(() => {
-    if (activeTab !== 'spells' || !id || spellsData) return
+    if (!['spells', 'sheet'].includes(activeTab) || !id || spellsData) return
     setSpellsLoading(true)
     setSpellsError('')
     getSpells(id)
@@ -621,7 +621,7 @@ export function CharacterSheetPage() {
           ) : inventory ? (
             <>
               {/* Carry weight bar */}
-              <section className="bg-stone-900 border border-stone-800 rounded-xl p-5">
+              <section className="bg-stone-900 border border-stone-700 rounded-xl p-5">
                 <div className="flex items-baseline justify-between mb-2">
                   <h2 className="text-sm font-semibold uppercase tracking-widest text-stone-400">Carry Weight</h2>
                   <span className="text-sm font-mono text-stone-300">
@@ -642,37 +642,8 @@ export function CharacterSheetPage() {
                 </div>
               </section>
 
-              {/* Currency */}
-              <section className="bg-stone-900 border border-stone-800 rounded-xl p-5">
-                <h2 className="text-sm font-semibold uppercase tracking-widest text-stone-400 mb-4">Currency</h2>
-                <div className="grid grid-cols-5 gap-3">
-                  {COIN_LABELS.map(({ key, label, color }) => (
-                    <div key={key} className="flex flex-col items-center gap-1">
-                      <span className={`text-xs font-bold ${color}`}>{label}</span>
-                      <input
-                        type="number"
-                        min={0}
-                        value={currencyDraft[key]}
-                        onChange={(e) => setCurrencyDraft((d) => ({ ...d, [key]: Math.max(0, parseInt(e.target.value, 10) || 0) }))}
-                        disabled={!isOwner}
-                        className="w-full px-2 py-1.5 text-center text-sm bg-stone-800 border border-stone-600 rounded-lg focus:outline-none focus:border-amber-500 disabled:opacity-60"
-                      />
-                    </div>
-                  ))}
-                </div>
-                {isOwner && (
-                  <button
-                    onClick={handleSaveCurrency}
-                    disabled={currencySaving}
-                    className="mt-3 px-4 py-1.5 text-sm bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 rounded-lg disabled:opacity-40 transition-colors"
-                  >
-                    {currencySaving ? 'Saving…' : 'Save Currency'}
-                  </button>
-                )}
-              </section>
-
               {/* Item list */}
-              <section className="bg-stone-900 border border-stone-800 rounded-xl p-5">
+              <section className="bg-stone-900 border border-stone-700 rounded-xl p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-sm font-semibold uppercase tracking-widest text-stone-400">
                     Items ({inventory.items.length})
@@ -840,7 +811,7 @@ export function CharacterSheetPage() {
           ) : spellsData ? (
             <>
               {/* Concentration tracker */}
-              <section className="bg-stone-900 border border-stone-800 rounded-xl p-5">
+              <section className="bg-stone-900 border border-stone-700 rounded-xl p-5">
                 <h2 className="text-sm font-semibold uppercase tracking-widest text-stone-400 mb-3">Concentration</h2>
                 {spellsData.concentration ? (
                   <div className="flex items-center gap-3">
@@ -862,7 +833,7 @@ export function CharacterSheetPage() {
               </section>
 
               {/* Spell slots */}
-              <section className="bg-stone-900 border border-stone-800 rounded-xl p-5">
+              <section className="bg-stone-900 border border-stone-700 rounded-xl p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-sm font-semibold uppercase tracking-widest text-stone-400">Spell Slots</h2>
                   {isOwner && (
@@ -954,7 +925,7 @@ export function CharacterSheetPage() {
               </section>
 
               {/* Spell list */}
-              <section className="bg-stone-900 border border-stone-800 rounded-xl p-5">
+              <section className="bg-stone-900 border border-stone-700 rounded-xl p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-sm font-semibold uppercase tracking-widest text-stone-400">
                     Spells ({spellsData.spells.length})
@@ -1054,157 +1025,285 @@ export function CharacterSheetPage() {
       )}
 
       {activeTab === 'sheet' && (
-      <main className="max-w-4xl mx-auto px-6 py-8 space-y-6">
-        {/* Top row: Ability scores + Combat stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Ability scores */}
-          <section className="bg-stone-900 border border-stone-800 rounded-xl p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-widest text-stone-400 mb-4">Ability Scores</h2>
-            <div className="grid grid-cols-3 gap-3">
-              {Object.entries(char.abilityScores).map(([key, val]) => (
-                <div key={key} className="flex flex-col items-center bg-stone-800 rounded-lg py-3 px-2">
-                  <span className="text-xs font-bold text-stone-400 uppercase">{ABILITY_LABELS[key]}</span>
-                  <span className="text-2xl font-bold mt-1">{signedBonus(val.modifier)}</span>
-                  <span className="text-sm text-stone-400">{val.score}</span>
-                </div>
-              ))}
-            </div>
-          </section>
+      <main className="max-w-screen-xl mx-auto px-6 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr_280px] gap-4">
 
-          {/* Combat stats */}
-          <section className="bg-stone-900 border border-stone-800 rounded-xl p-5 space-y-4">
-            <h2 className="text-sm font-semibold uppercase tracking-widest text-stone-400 mb-2">Combat</h2>
+          {/* ── LEFT COLUMN: Skills + Features ── */}
+          <div className="flex flex-col gap-4">
+            {/* Skills */}
+            <section className="bg-stone-900 border border-stone-700 rounded-xl p-4">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-3">Skills</h2>
+              <ul className="space-y-1">
+                {Object.entries(char.skills).map(([key, val]) => (
+                  <li key={key} className="flex items-center gap-2 text-sm">
+                    <ProfDot level={val.proficiency} />
+                    <span className="w-8 font-mono text-amber-300 text-xs text-right">{signedBonus(val.bonus)}</span>
+                    <span className="text-stone-300 text-xs">{SKILL_LABELS[key] ?? key}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
 
-            {/* HP bar */}
-            <div>
-              <div className="flex items-baseline justify-between mb-1">
-                <span className="text-xs text-stone-400 uppercase font-semibold">Hit Points</span>
-                <span className="text-sm font-mono">
-                  <span className={char.hp.current === 0 ? 'text-red-400' : 'text-stone-100'}>{char.hp.current}</span>
-                  <span className="text-stone-500">/{char.hp.max}</span>
-                  {char.hp.temporary > 0 && (
-                    <span className="text-sky-400 ml-1">(+{char.hp.temporary} temp)</span>
-                  )}
-                </span>
-              </div>
-              <div className="w-full h-3 bg-stone-700 rounded-full overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all ${hpPercent > 50 ? 'bg-green-500' : hpPercent > 25 ? 'bg-yellow-500' : 'bg-red-500'}`}
-                  style={{ width: `${hpPercent}%` }}
-                />
-              </div>
-
-              {/* HP controls (owner only) */}
-              {isOwner && (
-                <div className="mt-3 flex gap-2">
-                  <input
-                    type="number"
-                    min={0}
-                    value={hpInput}
-                    onChange={(e) => setHpInput(e.target.value)}
-                    placeholder="Amount"
-                    className="w-24 px-2 py-1.5 text-sm bg-stone-800 border border-stone-600 rounded-lg text-center focus:outline-none focus:border-amber-500"
-                    onKeyDown={(e) => e.key === 'Enter' && applyHpChange('heal')}
-                  />
-                  <button
-                    onClick={() => applyHpChange('damage')}
-                    disabled={saving || !hpInput}
-                    className="flex-1 px-3 py-1.5 text-sm bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 rounded-lg disabled:opacity-40 transition-colors"
-                  >
-                    Damage
-                  </button>
-                  <button
-                    onClick={() => applyHpChange('heal')}
-                    disabled={saving || !hpInput}
-                    className="flex-1 px-3 py-1.5 text-sm bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30 rounded-lg disabled:opacity-40 transition-colors"
-                  >
-                    Heal
-                  </button>
+            {/* Features & Traits */}
+            <section className="bg-stone-900 border border-stone-700 rounded-xl p-4 flex-1">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-3">
+                Features ({char.className} + {char.raceName} + {char.backgroundName || 'Bck'})
+              </h2>
+              {char.traits.length > 0 ? (
+                <ul className="space-y-1">
+                  {char.traits.map((t, i) => (
+                    <li key={i} className="flex items-start gap-2 text-xs text-stone-300">
+                      <span className="text-amber-400 mt-0.5 flex-shrink-0">•</span>
+                      {t}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-xs text-stone-600">No features yet.</p>
+              )}
+              {char.backstory && (
+                <div className="mt-4 pt-4 border-t border-stone-800">
+                  <p className="text-xs text-stone-500 font-semibold uppercase tracking-widest mb-1">Backstory</p>
+                  <p className="text-xs text-stone-400 leading-relaxed whitespace-pre-wrap">{char.backstory}</p>
                 </div>
               )}
-            </div>
+            </section>
+          </div>
 
-            <div className="grid grid-cols-3 gap-3 text-center">
-              <div className="bg-stone-800 rounded-lg py-2">
-                <p className="text-xs text-stone-400 uppercase font-semibold">AC</p>
-                <p className="text-xl font-bold">{char.armorClass}</p>
+          {/* ── CENTER COLUMN: Ability Scores + Equipment ── */}
+          <div className="flex flex-col gap-4">
+            {/* Ability Scores */}
+            <section className="bg-stone-900 border border-stone-700 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-xs font-semibold uppercase tracking-widest text-stone-400">Ability Scores</h2>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-stone-500">Prof</span>
+                  <span className="w-8 h-8 rounded-full border-2 border-amber-500 flex items-center justify-center text-sm font-bold text-amber-400">
+                    {signedBonus(char.proficiencyBonus)}
+                  </span>
+                </div>
               </div>
-              <div className="bg-stone-800 rounded-lg py-2">
-                <p className="text-xs text-stone-400 uppercase font-semibold">Initiative</p>
-                <p className="text-xl font-bold">{signedBonus(char.initiative ?? char.abilityScores.dex.modifier)}</p>
+              <div className="grid grid-cols-3 gap-2">
+                {Object.entries(char.abilityScores).map(([key, val]) => (
+                  <div key={key} className="flex flex-col items-center bg-stone-800 rounded-lg py-3 px-2">
+                    <span className="text-xs font-bold text-stone-400 uppercase">{ABILITY_LABELS[key]}</span>
+                    <span className="text-2xl font-bold mt-1">{signedBonus(val.modifier)}</span>
+                    <span className="text-sm text-stone-400">{val.score}</span>
+                  </div>
+                ))}
               </div>
-              <div className="bg-stone-800 rounded-lg py-2">
-                <p className="text-xs text-stone-400 uppercase font-semibold">Speed</p>
-                <p className="text-xl font-bold">{char.speed}</p>
-              </div>
-            </div>
+            </section>
 
-            <div className="grid grid-cols-2 gap-3 text-center text-sm">
-              <div className="bg-stone-800 rounded-lg py-2">
-                <p className="text-xs text-stone-400 uppercase font-semibold">Prof. Bonus</p>
-                <p className="text-lg font-bold text-amber-400">{signedBonus(char.proficiencyBonus)}</p>
+            {/* Equipment placeholder — links to Inventory tab */}
+            <section className="bg-stone-900 border border-stone-700 rounded-xl p-4 flex-1">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-xs font-semibold uppercase tracking-widest text-stone-400">Equipment</h2>
+                <button
+                  onClick={() => setActiveTab('inventory')}
+                  className="text-xs text-amber-400 hover:text-amber-300 transition-colors"
+                >
+                  Manage →
+                </button>
               </div>
-              <div className="bg-stone-800 rounded-lg py-2">
-                <p className="text-xs text-stone-400 uppercase font-semibold">Background</p>
-                <p className="text-sm font-medium truncate px-1">{char.backgroundName || '—'}</p>
+              {inventory ? (
+                inventory.items.length === 0 ? (
+                  <p className="text-xs text-stone-600">No items.</p>
+                ) : (
+                  <ul className="space-y-1.5">
+                    {inventory.items.map((item) => (
+                      <li key={item.id} className="flex items-center gap-2 text-xs text-stone-300">
+                        <span className="text-amber-400">•</span>
+                        <span className="flex-1 truncate">{item.name}</span>
+                        {item.quantity > 1 && <span className="text-stone-500">×{item.quantity}</span>}
+                        {item.isEquipped && <span className="text-green-400 font-semibold">E</span>}
+                      </li>
+                    ))}
+                  </ul>
+                )
+              ) : (
+                <p className="text-xs text-stone-600 italic">Load inventory tab to view.</p>
+              )}
+            </section>
+          </div>
+
+          {/* ── RIGHT COLUMN: Spell Slots + Combat + Saving Throws + Currency ── */}
+          <div className="flex flex-col gap-4">
+            {/* Spell Slots (Available Slots) */}
+            <section className="bg-stone-900 border border-stone-700 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-xs font-semibold uppercase tracking-widest text-stone-400">Available Slots</h2>
+                <button
+                  onClick={() => setActiveTab('spells')}
+                  className="text-xs text-amber-400 hover:text-amber-300 transition-colors"
+                >
+                  Manage →
+                </button>
               </div>
-            </div>
-          </section>
+              {spellsData ? (
+                <div className="grid grid-cols-9 gap-1">
+                  {[1,2,3,4,5,6,7,8,9].map((lvl) => {
+                    const slot = spellsData.slots[`l${lvl}` as keyof typeof spellsData.slots]
+                    return (
+                      <div key={lvl} className="flex flex-col items-center gap-1">
+                        <span className="text-[10px] text-stone-500">L{lvl}</span>
+                        <div className="flex flex-col gap-0.5">
+                          {slot.total === 0 ? (
+                            <span className="text-[10px] text-stone-700">—</span>
+                          ) : (
+                            Array.from({ length: slot.total }).map((_, i) => (
+                              <span
+                                key={i}
+                                className={`w-3 h-3 rounded-full ${i < slot.total - slot.used ? 'bg-violet-500' : 'bg-stone-700 border border-stone-600'}`}
+                              />
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : (
+                <p className="text-xs text-stone-600 italic">Load spells tab to view.</p>
+              )}
+            </section>
+
+            {/* Combat */}
+            <section className="bg-stone-900 border border-stone-700 rounded-xl p-4 space-y-3">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-stone-400">Combat</h2>
+
+              {/* HP bar */}
+              <div>
+                <div className="flex items-baseline justify-between mb-1">
+                  <span className="text-xs text-stone-400 uppercase font-semibold">Hit Points</span>
+                  <span className="text-xs font-mono">
+                    <span className={char.hp.current === 0 ? 'text-red-400' : 'text-stone-100'}>{char.hp.current}</span>
+                    <span className="text-stone-500">/{char.hp.max}</span>
+                    {char.hp.temporary > 0 && (
+                      <span className="text-sky-400 ml-1">(+{char.hp.temporary})</span>
+                    )}
+                  </span>
+                </div>
+                <div className="w-full h-2.5 bg-stone-700 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all ${hpPercent > 50 ? 'bg-green-500' : hpPercent > 25 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                    style={{ width: `${hpPercent}%` }}
+                  />
+                </div>
+                {isOwner && (
+                  <div className="mt-2 flex gap-1.5">
+                    <input
+                      type="number"
+                      min={0}
+                      value={hpInput}
+                      onChange={(e) => setHpInput(e.target.value)}
+                      placeholder="Amount"
+                      className="w-16 px-2 py-1 text-xs bg-stone-800 border border-stone-600 rounded text-center focus:outline-none focus:border-amber-500"
+                      onKeyDown={(e) => e.key === 'Enter' && applyHpChange('heal')}
+                    />
+                    <button
+                      onClick={() => applyHpChange('damage')}
+                      disabled={saving || !hpInput}
+                      className="flex-1 px-2 py-1 text-xs bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 rounded disabled:opacity-40 transition-colors"
+                    >
+                      Damage
+                    </button>
+                    <button
+                      onClick={() => applyHpChange('heal')}
+                      disabled={saving || !hpInput}
+                      className="flex-1 px-2 py-1 text-xs bg-green-500/20 hover:bg-green-500/30 text-green-300 border border-green-500/30 rounded disabled:opacity-40 transition-colors"
+                    >
+                      Heal
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* AC / Initiative / Speed */}
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="bg-stone-800 rounded-lg py-2">
+                  <p className="text-[10px] text-stone-400 uppercase font-semibold">AC</p>
+                  <p className="text-lg font-bold">{char.armorClass}</p>
+                </div>
+                <div className="bg-stone-800 rounded-lg py-2">
+                  <p className="text-[10px] text-stone-400 uppercase font-semibold">Initiative</p>
+                  <p className="text-lg font-bold">{signedBonus(char.initiative ?? char.abilityScores.dex.modifier)}</p>
+                </div>
+                <div className="bg-stone-800 rounded-lg py-2">
+                  <p className="text-[10px] text-stone-400 uppercase font-semibold">Speed</p>
+                  <p className="text-lg font-bold">{char.speed}</p>
+                </div>
+              </div>
+
+              {/* Concentration + Condition row */}
+              <div className="grid grid-cols-2 gap-2">
+                <div className="bg-stone-800 rounded-lg py-2 px-2">
+                  <p className="text-[10px] text-stone-400 uppercase font-semibold mb-1">Concentration</p>
+                  {spellsData?.concentration ? (
+                    <p className="text-xs text-violet-300 truncate">{spellsData.concentration.name}</p>
+                  ) : (
+                    <p className="text-xs text-stone-600">—</p>
+                  )}
+                </div>
+                <div className="bg-stone-800 rounded-lg py-2 px-2">
+                  <p className="text-[10px] text-stone-400 uppercase font-semibold mb-1">Condition</p>
+                  <p className="text-xs text-stone-600">—</p>
+                </div>
+              </div>
+
+
+            </section>
+
+            {/* Saving Throws */}
+            <section className="bg-stone-900 border border-stone-700 rounded-xl p-4">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-3">Saving Throws</h2>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                {Object.entries(char.savingThrows).map(([key, val]) => (
+                  <div key={key} className="flex items-center gap-1.5 text-xs">
+                    <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${val.proficient ? 'bg-sky-400' : 'border border-stone-600'}`} />
+                    <span className="font-mono text-amber-300 w-7 text-right">{signedBonus(val.bonus)}</span>
+                    <span className="text-stone-300">{ABILITY_LABELS[key]}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Currency */}
+            <section className="bg-stone-900 border border-stone-700 rounded-xl p-4">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-3">Currency</h2>
+              {inventory ? (
+                <>
+                  <div className="grid grid-cols-5 gap-1.5">
+                    {COIN_LABELS.map(({ key, label, color }) => (
+                      <div key={key} className="flex flex-col items-center gap-1">
+                        <span className={`text-[10px] font-bold ${color}`}>{label}</span>
+                        <input
+                          type="number"
+                          min={0}
+                          value={currencyDraft[key]}
+                          onChange={(e) => setCurrencyDraft((d) => ({ ...d, [key]: Math.max(0, parseInt(e.target.value, 10) || 0) }))}
+                          disabled={!isOwner}
+                          className="w-full px-1 py-1 text-center text-xs bg-stone-800 border border-stone-600 rounded focus:outline-none focus:border-amber-500 disabled:opacity-60"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  {isOwner && (
+                    <button
+                      onClick={handleSaveCurrency}
+                      disabled={currencySaving}
+                      className="mt-2 w-full py-1.5 text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 rounded disabled:opacity-40 transition-colors"
+                    >
+                      {currencySaving ? 'Saving…' : 'Save'}
+                    </button>
+                  )}
+                </>
+              ) : (
+                <p className="text-xs text-stone-600 italic">Loading…</p>
+              )}
+            </section>
+          </div>
+
         </div>
-
-        {/* Saving throws + Skills */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Saving throws */}
-          <section className="bg-stone-900 border border-stone-800 rounded-xl p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-widest text-stone-400 mb-3">Saving Throws</h2>
-            <ul className="space-y-1.5">
-              {Object.entries(char.savingThrows).map(([key, val]) => (
-                <li key={key} className="flex items-center gap-2 text-sm">
-                  <span className={`w-3 h-3 rounded-full inline-block flex-shrink-0 ${val.proficient ? 'bg-sky-400' : 'border border-stone-600'}`} />
-                  <span className="w-20 font-mono text-amber-300 text-xs">{signedBonus(val.bonus)}</span>
-                  <span className="text-stone-300">{ABILITY_LABELS[key]}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          {/* Skills */}
-          <section className="bg-stone-900 border border-stone-800 rounded-xl p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-widest text-stone-400 mb-3">Skills</h2>
-            <ul className="space-y-1">
-              {Object.entries(char.skills).map(([key, val]) => (
-                <li key={key} className="flex items-center gap-2 text-sm">
-                  <ProfDot level={val.proficiency} />
-                  <span className="w-10 font-mono text-amber-300 text-xs">{signedBonus(val.bonus)}</span>
-                  <span className="text-stone-300">{SKILL_LABELS[key] ?? key}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        </div>
-
-        {/* Traits & Features */}
-        {char.traits.length > 0 && (
-          <section className="bg-stone-900 border border-stone-800 rounded-xl p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-widest text-stone-400 mb-3">Features & Traits</h2>
-            <ul className="space-y-1">
-              {char.traits.map((t, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-stone-300">
-                  <span className="text-amber-400 mt-0.5">•</span>
-                  {t}
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {/* Backstory */}
-        {char.backstory && (
-          <section className="bg-stone-900 border border-stone-800 rounded-xl p-5">
-            <h2 className="text-sm font-semibold uppercase tracking-widest text-stone-400 mb-3">Backstory</h2>
-            <p className="text-sm text-stone-300 leading-relaxed whitespace-pre-wrap">{char.backstory}</p>
-          </section>
-        )}
       </main>
       )}
     </div>
