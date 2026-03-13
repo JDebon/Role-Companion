@@ -107,6 +107,7 @@ export function buildFullSheet(char: any) {
     skills,
     savingThrows,
     traits: char.traits ?? [],
+    conditions: char.conditions ?? [],
     backstory: char.backstory ?? null,
     portraitUrl: char.portraitUrl ?? null,
     createdAt: char.createdAt,

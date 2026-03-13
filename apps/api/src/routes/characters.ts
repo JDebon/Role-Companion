@@ -112,6 +112,7 @@ const patchSchema = z.object({
     .nullable()
     .optional(),
   traits: z.array(z.string()).optional(),
+  conditions: z.array(z.string()).optional(),
 })
 
 // ── Campaign-scoped router (mount at /api/v1/campaigns) ──────────────────────
@@ -259,7 +260,7 @@ charactersRouter.patch('/:id', zValidator('json', patchSchema), async (c) => {
     'name', 'className', 'subclassName', 'raceName', 'backgroundName',
     'level', 'experiencePoints', 'str', 'dex', 'con', 'int', 'wis', 'cha',
     'maxHp', 'currentHp', 'temporaryHp', 'armorClass', 'initiative', 'speed',
-    'backstory', 'portraitUrl', 'traits',
+    'backstory', 'portraitUrl', 'traits', 'conditions',
   ] as const
   for (const key of scalar) {
     if (key in patch && patch[key] !== undefined) {

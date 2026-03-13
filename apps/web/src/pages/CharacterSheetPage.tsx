@@ -8,6 +8,7 @@ import {
   type SpellsResponse, type SpellEntry,
   getCharacterNotes, getCharacterNote, createCharacterNote, patchCharacterNote, deleteCharacterNote,
   type NoteSummary, type NoteDetail,
+  getCompendiumList, type CompendiumEntry,
 } from '../api/client'
 import { useAuth } from '../context/AuthContext'
 
@@ -341,6 +342,24 @@ export function CharacterSheetPage() {
   const [saving, setSaving] = useState(false)
   const [activeTab, setActiveTab] = useState<Tab>('sheet')
 
+  // Sheet edit mode
+  const [editingSheet, setEditingSheet] = useState(false)
+  const [editDraft, setEditDraft] = useState<{
+    str: number; dex: number; con: number; int: number; wis: number; cha: number
+    maxHp: number; armorClass: number; speed: number; level: number; experiencePoints: number
+    skillProficiencies: Record<string, 'none' | 'proficient' | 'expertise'>
+    savingThrowProficiencies: Record<string, boolean>
+    traits: string[]; backstory: string
+    newTrait: string
+  } | null>(null)
+  const [sheetSaving, setSheetSaving] = useState(false)
+  const [sheetError, setSheetError] = useState<string | null>(null)
+
+  // Conditions
+  const [srdConditions, setSrdConditions] = useState<CompendiumEntry[]>([])
+  const [conditionCustomInput, setConditionCustomInput] = useState('')
+  const [conditionSaving, setConditionSaving] = useState(false)
+
   // Inventory state
   const [inventory, setInventory] = useState<InventoryResponse | null>(null)
   const [invLoading, setInvLoading] = useState(false)
@@ -378,6 +397,95 @@ export function CharacterSheetPage() {
       .catch(() => navigate(-1))
       .finally(() => setLoading(false))
   }, [id, navigate])
+
+  useEffect(() => {
+    getCompendiumList('conditions', 100)
+      .then((res) => setSrdConditions(res.data))
+      .catch(() => {})
+  }, [])
+
+  function startEditSheet() {
+    if (!char) return
+    setEditDraft({
+      str: char.abilityScores.str.score,
+      dex: char.abilityScores.dex.score,
+      con: char.abilityScores.con.score,
+      int: char.abilityScores.int.score,
+      wis: char.abilityScores.wis.score,
+      cha: char.abilityScores.cha.score,
+      maxHp: char.hp.max,
+      armorClass: char.armorClass,
+      speed: char.speed,
+      level: char.level,
+      experiencePoints: char.experiencePoints,
+      skillProficiencies: Object.fromEntries(
+        Object.entries(char.skills).map(([k, v]) => [k, v.proficiency])
+      ),
+      savingThrowProficiencies: Object.fromEntries(
+        Object.entries(char.savingThrows).map(([k, v]) => [k, v.proficient])
+      ),
+      traits: [...char.traits],
+      backstory: char.backstory ?? '',
+      newTrait: '',
+    })
+    setSheetError(null)
+    setEditingSheet(true)
+  }
+
+  async function saveEditSheet() {
+    if (!char || !editDraft) return
+    setSheetSaving(true)
+    setSheetError(null)
+    try {
+      const updated = await patchCharacter(char.id, {
+        str: editDraft.str, dex: editDraft.dex, con: editDraft.con,
+        int: editDraft.int, wis: editDraft.wis, cha: editDraft.cha,
+        maxHp: editDraft.maxHp, armorClass: editDraft.armorClass,
+        speed: editDraft.speed, level: editDraft.level,
+        experiencePoints: editDraft.experiencePoints,
+        skillProficiencies: editDraft.skillProficiencies,
+        savingThrowProficiencies: editDraft.savingThrowProficiencies,
+        traits: editDraft.traits,
+        backstory: editDraft.backstory || null,
+      })
+      setChar(updated)
+      setEditingSheet(false)
+      setEditDraft(null)
+    } catch {
+      setSheetError('Failed to save changes.')
+    } finally {
+      setSheetSaving(false)
+    }
+  }
+
+  async function toggleCondition(conditionName: string) {
+    if (!char) return
+    const current = char.conditions ?? []
+    const next = current.includes(conditionName)
+      ? current.filter((c) => c !== conditionName)
+      : [...current, conditionName]
+    setConditionSaving(true)
+    try {
+      const updated = await patchCharacter(char.id, { conditions: next })
+      setChar(updated)
+    } finally {
+      setConditionSaving(false)
+    }
+  }
+
+  async function addCustomCondition() {
+    if (!char || !conditionCustomInput.trim()) return
+    const name = conditionCustomInput.trim()
+    if ((char.conditions ?? []).includes(name)) return
+    setConditionSaving(true)
+    try {
+      const updated = await patchCharacter(char.id, { conditions: [...(char.conditions ?? []), name] })
+      setChar(updated)
+      setConditionCustomInput('')
+    } finally {
+      setConditionSaving(false)
+    }
+  }
 
   useEffect(() => {
     if (!['inventory', 'sheet'].includes(activeTab) || !id || inventory) return
@@ -750,7 +858,7 @@ export function CharacterSheetPage() {
                     {inventory.items.map((item) => (
                       <li key={item.id} className="flex items-center gap-3 bg-stone-800 rounded-lg px-3 py-2.5">
                         <div className="flex-1 min-w-0">
-                          <div className="flex items-baseline gap-2">
+                          <div className="flex items-baseline gap-2 flex-wrap">
                             <span className="font-medium text-sm text-stone-100 truncate">{item.name}</span>
                             <span className="text-xs text-stone-500">×{item.quantity}</span>
                             {item.weight !== null && (
@@ -758,6 +866,19 @@ export function CharacterSheetPage() {
                             )}
                             {item.cost && (
                               <span className="text-xs text-amber-400">{item.cost}</span>
+                            )}
+                            {/* Weapon stats */}
+                            {item.weaponDamage && (
+                              <span className="text-xs text-sky-300 font-mono">
+                                {item.weaponDamage}{item.weaponDamageType ? ` ${item.weaponDamageType}` : ''}
+                                {item.weaponRange ? ` · ${item.weaponRange}` : ''}
+                              </span>
+                            )}
+                            {/* Armor stats */}
+                            {item.armorBaseAc !== null && (
+                              <span className="text-xs text-green-300 font-mono">
+                                AC {item.armorBaseAc}{item.armorDexBonus ? ' + DEX' : ''}
+                              </span>
                             )}
                           </div>
                           {item.notes && (
@@ -1026,6 +1147,37 @@ export function CharacterSheetPage() {
 
       {activeTab === 'sheet' && (
       <main className="max-w-screen-xl mx-auto px-6 py-6">
+        {/* Edit Sheet banner */}
+        {isOwner && (
+          <div className="flex items-center justify-between mb-4">
+            {editingSheet ? (
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={saveEditSheet}
+                  disabled={sheetSaving}
+                  className="px-4 py-1.5 text-sm bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-stone-900 font-semibold rounded-lg transition-colors"
+                >
+                  {sheetSaving ? 'Saving…' : 'Save Changes'}
+                </button>
+                <button
+                  onClick={() => { setEditingSheet(false); setEditDraft(null); setSheetError(null) }}
+                  className="px-4 py-1.5 text-sm border border-stone-600 text-stone-400 hover:text-stone-200 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                {sheetError && <span className="text-xs text-red-400">{sheetError}</span>}
+              </div>
+            ) : (
+              <button
+                onClick={startEditSheet}
+                className="px-4 py-1.5 text-sm border border-stone-600 text-stone-400 hover:text-stone-200 rounded-lg transition-colors"
+              >
+                Edit Stats
+              </button>
+            )}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr_280px] gap-4">
 
           {/* ── LEFT COLUMN: Skills + Features ── */}
@@ -1036,7 +1188,21 @@ export function CharacterSheetPage() {
               <ul className="space-y-1">
                 {Object.entries(char.skills).map(([key, val]) => (
                   <li key={key} className="flex items-center gap-2 text-sm">
-                    <ProfDot level={val.proficiency} />
+                    {editingSheet && editDraft ? (
+                      <button
+                        onClick={() => {
+                          const cur = editDraft.skillProficiencies[key] ?? 'none'
+                          const next = cur === 'none' ? 'proficient' : cur === 'proficient' ? 'expertise' : 'none'
+                          setEditDraft((d) => d ? { ...d, skillProficiencies: { ...d.skillProficiencies, [key]: next } } : d)
+                        }}
+                        title="Click to cycle: none → proficient → expertise"
+                        className="flex-shrink-0"
+                      >
+                        <ProfDot level={editDraft.skillProficiencies[key] ?? 'none'} />
+                      </button>
+                    ) : (
+                      <ProfDot level={val.proficiency} />
+                    )}
                     <span className="w-8 font-mono text-amber-300 text-xs text-right">{signedBonus(val.bonus)}</span>
                     <span className="text-stone-300 text-xs">{SKILL_LABELS[key] ?? key}</span>
                   </li>
@@ -1049,23 +1215,81 @@ export function CharacterSheetPage() {
               <h2 className="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-3">
                 Features ({char.className} + {char.raceName} + {char.backgroundName || 'Bck'})
               </h2>
-              {char.traits.length > 0 ? (
-                <ul className="space-y-1">
-                  {char.traits.map((t, i) => (
-                    <li key={i} className="flex items-start gap-2 text-xs text-stone-300">
-                      <span className="text-amber-400 mt-0.5 flex-shrink-0">•</span>
-                      {t}
-                    </li>
+              {editingSheet && editDraft ? (
+                <div className="space-y-2">
+                  {editDraft.traits.map((t, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <span className="text-amber-400 mt-1 flex-shrink-0 text-xs">•</span>
+                      <input
+                        type="text"
+                        value={t}
+                        onChange={(e) => {
+                          const next = [...editDraft.traits]
+                          next[i] = e.target.value
+                          setEditDraft((d) => d ? { ...d, traits: next } : d)
+                        }}
+                        className="flex-1 px-2 py-1 text-xs bg-stone-800 border border-stone-600 rounded focus:outline-none focus:border-amber-500"
+                      />
+                      <button
+                        onClick={() => setEditDraft((d) => d ? { ...d, traits: d.traits.filter((_, j) => j !== i) } : d)}
+                        className="text-red-400 hover:text-red-300 text-xs mt-1"
+                      >×</button>
+                    </div>
                   ))}
-                </ul>
-              ) : (
-                <p className="text-xs text-stone-600">No features yet.</p>
-              )}
-              {char.backstory && (
-                <div className="mt-4 pt-4 border-t border-stone-800">
-                  <p className="text-xs text-stone-500 font-semibold uppercase tracking-widest mb-1">Backstory</p>
-                  <p className="text-xs text-stone-400 leading-relaxed whitespace-pre-wrap">{char.backstory}</p>
+                  <div className="flex gap-2 mt-2">
+                    <input
+                      type="text"
+                      value={editDraft.newTrait}
+                      onChange={(e) => setEditDraft((d) => d ? { ...d, newTrait: e.target.value } : d)}
+                      placeholder="Add feature or trait…"
+                      className="flex-1 px-2 py-1 text-xs bg-stone-800 border border-stone-600 rounded focus:outline-none focus:border-amber-500"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && editDraft.newTrait.trim()) {
+                          setEditDraft((d) => d ? { ...d, traits: [...d.traits, d.newTrait.trim()], newTrait: '' } : d)
+                        }
+                      }}
+                    />
+                    <button
+                      onClick={() => {
+                        if (editDraft.newTrait.trim()) {
+                          setEditDraft((d) => d ? { ...d, traits: [...d.traits, d.newTrait.trim()], newTrait: '' } : d)
+                        }
+                      }}
+                      className="px-2 py-1 text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded hover:bg-amber-500/30"
+                    >+ Add</button>
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-stone-800">
+                    <p className="text-xs text-stone-500 font-semibold uppercase tracking-widest mb-1">Backstory</p>
+                    <textarea
+                      value={editDraft.backstory}
+                      onChange={(e) => setEditDraft((d) => d ? { ...d, backstory: e.target.value } : d)}
+                      rows={4}
+                      placeholder="Character backstory…"
+                      className="w-full px-2 py-1.5 text-xs bg-stone-800 border border-stone-600 rounded focus:outline-none focus:border-amber-500 resize-y"
+                    />
+                  </div>
                 </div>
+              ) : (
+                <>
+                  {char.traits.length > 0 ? (
+                    <ul className="space-y-1">
+                      {char.traits.map((t, i) => (
+                        <li key={i} className="flex items-start gap-2 text-xs text-stone-300">
+                          <span className="text-amber-400 mt-0.5 flex-shrink-0">•</span>
+                          {t}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-xs text-stone-600">No features yet.</p>
+                  )}
+                  {char.backstory && (
+                    <div className="mt-4 pt-4 border-t border-stone-800">
+                      <p className="text-xs text-stone-500 font-semibold uppercase tracking-widest mb-1">Backstory</p>
+                      <p className="text-xs text-stone-400 leading-relaxed whitespace-pre-wrap">{char.backstory}</p>
+                    </div>
+                  )}
+                </>
               )}
             </section>
           </div>
@@ -1087,11 +1311,41 @@ export function CharacterSheetPage() {
                 {Object.entries(char.abilityScores).map(([key, val]) => (
                   <div key={key} className="flex flex-col items-center bg-stone-800 rounded-lg py-3 px-2">
                     <span className="text-xs font-bold text-stone-400 uppercase">{ABILITY_LABELS[key]}</span>
-                    <span className="text-2xl font-bold mt-1">{signedBonus(val.modifier)}</span>
-                    <span className="text-sm text-stone-400">{val.score}</span>
+                    {editingSheet && editDraft ? (
+                      <input
+                        type="number"
+                        min={1} max={30}
+                        value={(editDraft as Record<string, unknown>)[key] as number}
+                        onChange={(e) => setEditDraft((d) => d ? { ...d, [key]: Math.max(1, Math.min(30, parseInt(e.target.value, 10) || 1)) } : d)}
+                        className="w-14 text-center text-lg font-bold bg-stone-700 border border-stone-500 rounded focus:outline-none focus:border-amber-500 mt-1"
+                      />
+                    ) : (
+                      <>
+                        <span className="text-2xl font-bold mt-1">{signedBonus(val.modifier)}</span>
+                        <span className="text-sm text-stone-400">{val.score}</span>
+                      </>
+                    )}
                   </div>
                 ))}
               </div>
+              {editingSheet && editDraft && (
+                <div className="mt-3 grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="text-[10px] text-stone-500 uppercase">Level</label>
+                    <input type="number" min={1} max={20} value={editDraft.level}
+                      onChange={(e) => setEditDraft((d) => d ? { ...d, level: Math.max(1, Math.min(20, parseInt(e.target.value, 10) || 1)) } : d)}
+                      className="w-full text-center text-sm bg-stone-800 border border-stone-600 rounded px-1 py-1 focus:outline-none focus:border-amber-500"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="text-[10px] text-stone-500 uppercase">Experience Points</label>
+                    <input type="number" min={0} value={editDraft.experiencePoints}
+                      onChange={(e) => setEditDraft((d) => d ? { ...d, experiencePoints: Math.max(0, parseInt(e.target.value, 10) || 0) } : d)}
+                      className="w-full text-center text-sm bg-stone-800 border border-stone-600 rounded px-1 py-1 focus:outline-none focus:border-amber-500"
+                    />
+                  </div>
+                </div>
+              )}
             </section>
 
             {/* Equipment placeholder — links to Inventory tab */}
@@ -1175,13 +1429,25 @@ export function CharacterSheetPage() {
               <div>
                 <div className="flex items-baseline justify-between mb-1">
                   <span className="text-xs text-stone-400 uppercase font-semibold">Hit Points</span>
-                  <span className="text-xs font-mono">
-                    <span className={char.hp.current === 0 ? 'text-red-400' : 'text-stone-100'}>{char.hp.current}</span>
-                    <span className="text-stone-500">/{char.hp.max}</span>
-                    {char.hp.temporary > 0 && (
-                      <span className="text-sky-400 ml-1">(+{char.hp.temporary})</span>
-                    )}
-                  </span>
+                  {editingSheet && editDraft ? (
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-stone-500">Max:</span>
+                      <input
+                        type="number" min={0}
+                        value={editDraft.maxHp}
+                        onChange={(e) => setEditDraft((d) => d ? { ...d, maxHp: Math.max(0, parseInt(e.target.value, 10) || 0) } : d)}
+                        className="w-16 text-center text-xs bg-stone-700 border border-stone-500 rounded px-1 py-0.5 focus:outline-none focus:border-amber-500"
+                      />
+                    </div>
+                  ) : (
+                    <span className="text-xs font-mono">
+                      <span className={char.hp.current === 0 ? 'text-red-400' : 'text-stone-100'}>{char.hp.current}</span>
+                      <span className="text-stone-500">/{char.hp.max}</span>
+                      {char.hp.temporary > 0 && (
+                        <span className="text-sky-400 ml-1">(+{char.hp.temporary})</span>
+                      )}
+                    </span>
+                  )}
                 </div>
                 <div className="w-full h-2.5 bg-stone-700 rounded-full overflow-hidden">
                   <div
@@ -1220,23 +1486,37 @@ export function CharacterSheetPage() {
 
               {/* AC / Initiative / Speed */}
               <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="bg-stone-800 rounded-lg py-2">
+                <div className="bg-stone-800 rounded-lg py-2 px-1">
                   <p className="text-[10px] text-stone-400 uppercase font-semibold">AC</p>
-                  <p className="text-lg font-bold">{char.armorClass}</p>
+                  {editingSheet && editDraft ? (
+                    <input type="number" min={0} value={editDraft.armorClass}
+                      onChange={(e) => setEditDraft((d) => d ? { ...d, armorClass: Math.max(0, parseInt(e.target.value, 10) || 0) } : d)}
+                      className="w-full text-center text-lg font-bold bg-stone-700 border border-stone-500 rounded focus:outline-none focus:border-amber-500"
+                    />
+                  ) : (
+                    <p className="text-lg font-bold">{char.armorClass}</p>
+                  )}
                 </div>
                 <div className="bg-stone-800 rounded-lg py-2">
                   <p className="text-[10px] text-stone-400 uppercase font-semibold">Initiative</p>
                   <p className="text-lg font-bold">{signedBonus(char.initiative ?? char.abilityScores.dex.modifier)}</p>
                 </div>
-                <div className="bg-stone-800 rounded-lg py-2">
+                <div className="bg-stone-800 rounded-lg py-2 px-1">
                   <p className="text-[10px] text-stone-400 uppercase font-semibold">Speed</p>
-                  <p className="text-lg font-bold">{char.speed}</p>
+                  {editingSheet && editDraft ? (
+                    <input type="number" min={0} value={editDraft.speed}
+                      onChange={(e) => setEditDraft((d) => d ? { ...d, speed: Math.max(0, parseInt(e.target.value, 10) || 0) } : d)}
+                      className="w-full text-center text-lg font-bold bg-stone-700 border border-stone-500 rounded focus:outline-none focus:border-amber-500"
+                    />
+                  ) : (
+                    <p className="text-lg font-bold">{char.speed}</p>
+                  )}
                 </div>
               </div>
 
-              {/* Concentration + Condition row */}
-              <div className="grid grid-cols-2 gap-2">
-                <div className="bg-stone-800 rounded-lg py-2 px-2">
+              {/* Concentration + Conditions */}
+              <div>
+                <div className="bg-stone-800 rounded-lg py-2 px-2 mb-2">
                   <p className="text-[10px] text-stone-400 uppercase font-semibold mb-1">Concentration</p>
                   {spellsData?.concentration ? (
                     <p className="text-xs text-violet-300 truncate">{spellsData.concentration.name}</p>
@@ -1245,8 +1525,72 @@ export function CharacterSheetPage() {
                   )}
                 </div>
                 <div className="bg-stone-800 rounded-lg py-2 px-2">
-                  <p className="text-[10px] text-stone-400 uppercase font-semibold mb-1">Condition</p>
-                  <p className="text-xs text-stone-600">—</p>
+                  <p className="text-[10px] text-stone-400 uppercase font-semibold mb-2">Conditions</p>
+                  {/* Active conditions */}
+                  {(char.conditions ?? []).length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      {(char.conditions ?? []).map((cond) => (
+                        <span
+                          key={cond}
+                          className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-red-500/20 border border-red-500/30 text-red-300"
+                        >
+                          {cond}
+                          {isOwner && (
+                            <button
+                              onClick={() => toggleCondition(cond)}
+                              disabled={conditionSaving}
+                              className="hover:text-red-100 ml-0.5"
+                            >×</button>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {isOwner && (
+                    <>
+                      {/* SRD condition picker */}
+                      {srdConditions.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mb-2">
+                          {srdConditions.map((c) => {
+                            const active = (char.conditions ?? []).includes(c.name)
+                            return (
+                              <button
+                                key={c.index}
+                                onClick={() => toggleCondition(c.name)}
+                                disabled={conditionSaving}
+                                className={`text-[10px] px-1.5 py-0.5 rounded border transition-colors ${
+                                  active
+                                    ? 'bg-red-500/20 border-red-500/30 text-red-300'
+                                    : 'border-stone-600 text-stone-500 hover:text-stone-300 hover:border-stone-400'
+                                }`}
+                              >
+                                {c.name}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      )}
+                      {/* Custom condition input */}
+                      <div className="flex gap-1">
+                        <input
+                          type="text"
+                          placeholder="Custom condition…"
+                          value={conditionCustomInput}
+                          onChange={(e) => setConditionCustomInput(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && addCustomCondition()}
+                          className="flex-1 px-2 py-1 text-[10px] bg-stone-700 border border-stone-600 rounded focus:outline-none focus:border-amber-500"
+                        />
+                        <button
+                          onClick={addCustomCondition}
+                          disabled={conditionSaving || !conditionCustomInput.trim()}
+                          className="px-2 py-1 text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded hover:bg-amber-500/30 disabled:opacity-40"
+                        >+</button>
+                      </div>
+                    </>
+                  )}
+                  {(char.conditions ?? []).length === 0 && !isOwner && (
+                    <p className="text-xs text-stone-600">—</p>
+                  )}
                 </div>
               </div>
 
@@ -1259,7 +1603,20 @@ export function CharacterSheetPage() {
               <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                 {Object.entries(char.savingThrows).map(([key, val]) => (
                   <div key={key} className="flex items-center gap-1.5 text-xs">
-                    <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${val.proficient ? 'bg-sky-400' : 'border border-stone-600'}`} />
+                    {editingSheet && editDraft ? (
+                      <button
+                        onClick={() => setEditDraft((d) => d ? {
+                          ...d,
+                          savingThrowProficiencies: { ...d.savingThrowProficiencies, [key]: !d.savingThrowProficiencies[key] }
+                        } : d)}
+                        title="Toggle proficiency"
+                        className={`w-2.5 h-2.5 rounded-full flex-shrink-0 border transition-colors ${
+                          editDraft.savingThrowProficiencies[key] ? 'bg-sky-400 border-sky-400' : 'border-stone-400 hover:border-sky-400'
+                        }`}
+                      />
+                    ) : (
+                      <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${val.proficient ? 'bg-sky-400' : 'border border-stone-600'}`} />
+                    )}
                     <span className="font-mono text-amber-300 w-7 text-right">{signedBonus(val.bonus)}</span>
                     <span className="text-stone-300">{ABILITY_LABELS[key]}</span>
                   </div>

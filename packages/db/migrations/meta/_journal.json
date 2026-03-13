@@ -64,6 +64,13 @@
       "when": 1741996800000,
       "tag": "0008_lore_documents",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1742083200000,
+      "tag": "0009_character_conditions",
+      "breakpoints": true
     }
   ]
 }

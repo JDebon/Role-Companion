@@ -89,6 +89,7 @@ export const characters = pgTable('characters', {
   backstory: text('backstory'),
   portraitUrl: varchar('portrait_url', { length: 500 }),
   traits: jsonb('traits').notNull().$type<string[]>().default([]),
+  conditions: jsonb('conditions').notNull().$type<string[]>().default([]),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })
