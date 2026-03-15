@@ -47,14 +47,16 @@ for (const entry of journal.entries) {
     .map((s) => s.trim())
     .filter(Boolean)
 
-  for (const stmt of statements) {
-    await sql.unsafe(stmt)
-  }
+  await sql.begin(async (tx) => {
+    for (const stmt of statements) {
+      await tx.unsafe(stmt)
+    }
 
-  await sql`
-    INSERT INTO drizzle.__drizzle_migrations (hash, created_at)
-    VALUES (${hash}, ${Date.now()})
-  `
+    await tx`
+      INSERT INTO drizzle.__drizzle_migrations (hash, created_at)
+      VALUES (${hash}, ${Date.now()})
+    `
+  })
 }
 
 console.log('Migrations complete.')
