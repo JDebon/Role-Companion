@@ -19,57 +19,71 @@
     {
       "idx": 2,
       "version": "7",
-      "when": 1741478400000,
+      "when": 1773098200000,
       "tag": "0002_characters",
       "breakpoints": true
     },
     {
       "idx": 3,
       "version": "7",
-      "when": 1741564800000,
+      "when": 1773098300000,
       "tag": "0003_inventory",
       "breakpoints": true
     },
     {
       "idx": 4,
       "version": "7",
-      "when": 1741651200000,
+      "when": 1773098400000,
       "tag": "0004_spell_management",
       "breakpoints": true
     },
     {
       "idx": 5,
       "version": "7",
-      "when": 1741737600000,
+      "when": 1773098500000,
       "tag": "0005_custom_content",
       "breakpoints": true
     },
     {
       "idx": 6,
       "version": "7",
-      "when": 1741824000000,
+      "when": 1773098600000,
       "tag": "0006_dm_tools",
       "breakpoints": true
     },
     {
       "idx": 7,
       "version": "7",
-      "when": 1741910400000,
+      "when": 1773098700000,
       "tag": "0007_notes_session_logs",
       "breakpoints": true
     },
     {
       "idx": 8,
       "version": "7",
-      "when": 1741996800000,
+      "when": 1773098800000,
       "tag": "0008_lore_documents",
       "breakpoints": true
     },
     {
       "idx": 9,
       "version": "7",
-      "when": 1742083200000,
+      "when": 1773098900000,
       "tag": "0009_character_conditions",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1773099000000,
+      "tag": "0010_character_status",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1773099100000,
+      "tag": "0011_entity_type_extensions",
       "breakpoints": true
     }
   ]

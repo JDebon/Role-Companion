@@ -119,6 +119,7 @@ export interface CharacterSummary {
   currentHp: number
   maxHp: number
   userId: string
+  status: 'draft' | 'complete'
 }
 
 export interface AbilityScore {
@@ -159,6 +160,7 @@ export interface CharacterSheet {
   conditions: string[]
   backstory: string | null
   portraitUrl: string | null
+  status: 'draft' | 'complete'
 }
 
 export interface CreateCharacterInput {
@@ -182,6 +184,7 @@ export interface CreateCharacterInput {
   savingThrowProficiencies?: Record<string, boolean>
   traits?: string[]
   backstory?: string
+  status?: 'draft' | 'complete'
 }
 
 export function getCampaignCharacters(campaignId: string): Promise<CharacterSummary[]> {
@@ -199,7 +202,7 @@ export function getCharacter(characterId: string): Promise<CharacterSheet> {
   return request(`/characters/${characterId}`)
 }
 
-export function patchCharacter(characterId: string, data: Partial<CreateCharacterInput & { currentHp: number; maxHp: number; temporaryHp: number; conditions: string[] }>): Promise<CharacterSheet> {
+export function patchCharacter(characterId: string, data: Partial<CreateCharacterInput & { currentHp: number; maxHp: number; temporaryHp: number; conditions: string[]; status: 'draft' | 'complete' }>): Promise<CharacterSheet> {
   return request(`/characters/${characterId}`, {
     method: 'PATCH',
     body: JSON.stringify(data),
@@ -386,7 +389,7 @@ export function putConcentration(
 
 // ── Custom Content ────────────────────────────────────────────────────────────
 
-export type EntityType = 'monster' | 'item' | 'rule'
+export type EntityType = 'monster' | 'item' | 'rule' | 'class' | 'race' | 'background'
 
 export interface CustomEntitySummary {
   id: string
@@ -809,6 +812,20 @@ export function patchLoreDocument(
 
 export function deleteLoreDocument(campaignId: string, docId: string): Promise<void> {
   return request(`/campaigns/${campaignId}/lore/${docId}`, { method: 'DELETE' })
+}
+
+// ── Character Options ──────────────────────────────────────────────────────
+
+export interface CharacterOptionsResponse {
+  srd: Array<{ index: string; name: string }>
+  custom: Array<{ id: string; name: string; baseIndex: string | null }>
+}
+
+export function getCharacterOptions(
+  campaignId: string,
+  type: 'class' | 'race' | 'background'
+): Promise<CharacterOptionsResponse> {
+  return request(`/campaigns/${campaignId}/character-options?type=${type}`)
 }
 
 // ── Compendium ────────────────────────────────────────────────────────────────

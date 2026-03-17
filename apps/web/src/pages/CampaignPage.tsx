@@ -3,485 +3,12 @@ import { useParams, useNavigate } from 'react-router-dom'
 import {
   getCampaignMembers,
   getCampaignCharacters,
-  createCharacter,
   regenerateInvite,
   removeMember,
-  getCompendiumList,
-  getCompendiumClassDetail,
-  getCompendiumRaceDetail,
-  getCompendiumBackgroundDetail,
   type Member,
   type CharacterSummary,
-  type CreateCharacterInput,
-  type CompendiumEntry,
 } from '../api/client'
 import { useAuth } from '../context/AuthContext'
-
-// ── Create Character Modal ────────────────────────────────────────────────────
-
-interface CreateCharFormProps {
-  campaignId: string
-  onCreated: (char: CharacterSummary) => void
-  onClose: () => void
-}
-
-function CreateCharForm({ campaignId, onCreated, onClose }: CreateCharFormProps) {
-  const [form, setForm] = useState({
-    name: '', className: '', raceName: '', backgroundName: '',
-    level: 1,
-    str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10,
-    maxHp: 10, currentHp: 10,
-    armorClass: 10, speed: 30,
-  })
-  const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  // SRD option lists
-  const [srdClasses, setSrdClasses] = useState<CompendiumEntry[]>([])
-  const [srdRaces, setSrdRaces] = useState<CompendiumEntry[]>([])
-  const [srdBackgrounds, setSrdBackgrounds] = useState<CompendiumEntry[]>([])
-
-  // Proficiency state populated from SRD
-  const [skillProficiencies, setSkillProficiencies] = useState<Record<string, 'none' | 'proficient' | 'expertise'>>({})
-  const [savingThrowProficiencies, setSavingThrowProficiencies] = useState<Record<string, boolean>>({})
-  const [classSkillChoices, setClassSkillChoices] = useState<{ choose: number; options: string[] } | null>(null)
-
-  // Race bonus tracking for reversal
-  const [appliedRaceBonuses, setAppliedRaceBonuses] = useState<Record<string, number>>({})
-
-  useEffect(() => {
-    Promise.all([
-      getCompendiumList('classes', 100),
-      getCompendiumList('races', 100),
-      getCompendiumList('backgrounds', 100),
-    ]).then(([cls, rcs, bgs]) => {
-      setSrdClasses(cls.data)
-      setSrdRaces(rcs.data)
-      setSrdBackgrounds(bgs.data)
-    }).catch(() => {})
-  }, [])
-
-  async function handleClassChange(index: string, name: string) {
-    setForm((f) => ({ ...f, className: name }))
-    if (!index) { setSavingThrowProficiencies({}); setClassSkillChoices(null); return }
-    try {
-      const detail = await getCompendiumClassDetail(index)
-      // Auto-populate saving throws
-      const stProfs: Record<string, boolean> = {}
-      for (const st of detail.data.saving_throws ?? []) {
-        stProfs[st.index] = true
-      }
-      setSavingThrowProficiencies(stProfs)
-      // Build skill proficiency choice picker
-      const choice = detail.data.proficiency_choices?.[0]
-      if (choice) {
-        const opts = choice.from.options
-          .map((o) => o.item.index.replace('skill-', ''))
-          .filter(Boolean)
-        setClassSkillChoices({ choose: choice.choose, options: opts })
-        // Clear previously-set class skill profs
-        setSkillProficiencies((prev) => {
-          const next = { ...prev }
-          for (const opt of opts) delete next[opt]
-          return next
-        })
-      } else {
-        setClassSkillChoices(null)
-      }
-    } catch {
-      // If fetch fails, leave fields blank for manual input
-    }
-  }
-
-  async function handleRaceChange(index: string, name: string) {
-    setForm((f) => {
-      // Reverse previous race bonuses
-      const reverted = { ...f }
-      for (const [key, bonus] of Object.entries(appliedRaceBonuses)) {
-        const k = key as keyof typeof reverted
-        if (typeof reverted[k] === 'number') {
-          (reverted as Record<string, number>)[key] = (reverted[k] as number) - bonus
-        }
-      }
-      return { ...reverted, raceName: name }
-    })
-    setAppliedRaceBonuses({})
-    if (!index) return
-    try {
-      const detail = await getCompendiumRaceDetail(index)
-      const bonuses: Record<string, number> = {}
-      for (const ab of detail.data.ability_bonuses ?? []) {
-        bonuses[ab.ability_score.index] = ab.bonus
-      }
-      setAppliedRaceBonuses(bonuses)
-      setForm((f) => {
-        const next = { ...f }
-        for (const [key, bonus] of Object.entries(bonuses)) {
-          const k = key as keyof typeof next
-          if (typeof next[k] === 'number') {
-            (next as Record<string, number>)[key] = Math.max(1, Math.min(30, (next[k] as number) + bonus))
-          }
-        }
-        if (detail.data.speed) next.speed = detail.data.speed
-        return next
-      })
-    } catch {
-      // leave fields as-is
-    }
-  }
-
-  async function handleBackgroundChange(index: string, name: string) {
-    setForm((f) => ({ ...f, backgroundName: name }))
-    if (!index) return
-    try {
-      const detail = await getCompendiumBackgroundDetail(index)
-      const profNames = (detail.data.starting_proficiencies ?? [])
-        .map((p) => p.index.replace('skill-', ''))
-        .filter(Boolean)
-      setSkillProficiencies((prev) => {
-        const next = { ...prev }
-        for (const skill of profNames) next[skill] = 'proficient'
-        return next
-      })
-    } catch {
-      // leave as-is
-    }
-  }
-
-  function toggleClassSkill(skill: string) {
-    if (!classSkillChoices) return
-    setSkillProficiencies((prev) => {
-      const currentChosen = classSkillChoices.options.filter((s) => prev[s] === 'proficient')
-      if (prev[skill] === 'proficient') {
-        const next = { ...prev }
-        delete next[skill]
-        return next
-      }
-      if (currentChosen.length >= classSkillChoices.choose) return prev
-      return { ...prev, [skill]: 'proficient' }
-    })
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError(null)
-    if (form.currentHp > form.maxHp) {
-      setError('Current HP cannot exceed Max HP')
-      return
-    }
-    setSubmitting(true)
-    try {
-      const data: CreateCharacterInput = {
-        ...form,
-        skillProficiencies: Object.keys(skillProficiencies).length > 0 ? skillProficiencies : undefined,
-        savingThrowProficiencies: Object.keys(savingThrowProficiencies).length > 0 ? savingThrowProficiencies : undefined,
-      }
-      const sheet = await createCharacter(campaignId, data)
-      onCreated({
-        id: sheet.id,
-        name: sheet.name,
-        className: sheet.className,
-        raceName: sheet.raceName,
-        level: sheet.level,
-        currentHp: sheet.hp.current,
-        maxHp: sheet.hp.max,
-        userId: sheet.userId,
-      })
-    } catch {
-      setError('Failed to create character. Check all fields.')
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  const abilityKeys = ['str', 'dex', 'con', 'int', 'wis', 'cha'] as const
-  const abilityLabels: Record<string, string> = { str: 'STR', dex: 'DEX', con: 'CON', int: 'INT', wis: 'WIS', cha: 'CHA' }
-
-  function abilityMod(score: number) {
-    const m = Math.floor((score - 10) / 2)
-    return m >= 0 ? `+${m}` : `${m}`
-  }
-
-  return (
-    <div
-      className="fixed inset-0 bg-black/70 flex items-center justify-center px-4 z-50 overflow-y-auto py-8"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div className="bg-stone-900 border border-stone-700 rounded-xl w-full max-w-lg">
-        <div className="p-6 border-b border-stone-800">
-          <h3 className="text-lg font-semibold">New Character</h3>
-        </div>
-
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
-          {/* Identity */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="col-span-2">
-              <label className="block text-xs text-stone-400 mb-1">Character Name</label>
-              <input
-                required
-                value={form.name}
-                onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                className="w-full px-3 py-2 bg-stone-800 border border-stone-600 rounded-lg text-sm focus:outline-none focus:border-amber-500"
-                placeholder="Thorin Ironbeard"
-              />
-            </div>
-
-            {/* Class — SRD dropdown with free-text fallback */}
-            <div>
-              <label className="block text-xs text-stone-400 mb-1">Class</label>
-              {srdClasses.length > 0 ? (
-                <select
-                  required
-                  value={srdClasses.find((c) => c.name === form.className)?.index ?? '__custom__'}
-                  onChange={(e) => {
-                    const idx = e.target.value
-                    if (idx === '__custom__') { handleClassChange('', form.className); return }
-                    const entry = srdClasses.find((c) => c.index === idx)
-                    if (entry) handleClassChange(entry.index, entry.name)
-                  }}
-                  className="w-full px-3 py-2 bg-stone-800 border border-stone-600 rounded-lg text-sm focus:outline-none focus:border-amber-500"
-                >
-                  <option value="">— Select Class —</option>
-                  <optgroup label="SRD">
-                    {srdClasses.map((c) => <option key={c.index} value={c.index}>{c.name}</option>)}
-                  </optgroup>
-                  <optgroup label="Custom">
-                    <option value="__custom__">Custom (type below)</option>
-                  </optgroup>
-                </select>
-              ) : null}
-              {(srdClasses.length === 0 || !srdClasses.find((c) => c.name === form.className)) && (
-                <input
-                  required={srdClasses.length === 0}
-                  value={form.className}
-                  onChange={(e) => setForm((f) => ({ ...f, className: e.target.value }))}
-                  className="w-full mt-1 px-3 py-2 bg-stone-800 border border-stone-600 rounded-lg text-sm focus:outline-none focus:border-amber-500"
-                  placeholder={srdClasses.length > 0 ? 'Homebrew class name…' : 'Fighter'}
-                />
-              )}
-            </div>
-
-            {/* Race — SRD dropdown with free-text fallback */}
-            <div>
-              <label className="block text-xs text-stone-400 mb-1">Race</label>
-              {srdRaces.length > 0 ? (
-                <select
-                  required
-                  value={srdRaces.find((r) => r.name === form.raceName)?.index ?? '__custom__'}
-                  onChange={(e) => {
-                    const idx = e.target.value
-                    if (idx === '__custom__') { handleRaceChange('', form.raceName); return }
-                    const entry = srdRaces.find((r) => r.index === idx)
-                    if (entry) handleRaceChange(entry.index, entry.name)
-                  }}
-                  className="w-full px-3 py-2 bg-stone-800 border border-stone-600 rounded-lg text-sm focus:outline-none focus:border-amber-500"
-                >
-                  <option value="">— Select Race —</option>
-                  <optgroup label="SRD">
-                    {srdRaces.map((r) => <option key={r.index} value={r.index}>{r.name}</option>)}
-                  </optgroup>
-                  <optgroup label="Custom">
-                    <option value="__custom__">Custom (type below)</option>
-                  </optgroup>
-                </select>
-              ) : null}
-              {(srdRaces.length === 0 || !srdRaces.find((r) => r.name === form.raceName)) && (
-                <input
-                  required={srdRaces.length === 0}
-                  value={form.raceName}
-                  onChange={(e) => setForm((f) => ({ ...f, raceName: e.target.value }))}
-                  className="w-full mt-1 px-3 py-2 bg-stone-800 border border-stone-600 rounded-lg text-sm focus:outline-none focus:border-amber-500"
-                  placeholder={srdRaces.length > 0 ? 'Homebrew race name…' : 'Dwarf'}
-                />
-              )}
-            </div>
-
-            {/* Background — SRD dropdown with free-text fallback */}
-            <div>
-              <label className="block text-xs text-stone-400 mb-1">Background</label>
-              {srdBackgrounds.length > 0 ? (
-                <select
-                  value={srdBackgrounds.find((b) => b.name === form.backgroundName)?.index ?? '__custom__'}
-                  onChange={(e) => {
-                    const idx = e.target.value
-                    if (idx === '__custom__') { handleBackgroundChange('', form.backgroundName); return }
-                    const entry = srdBackgrounds.find((b) => b.index === idx)
-                    if (entry) handleBackgroundChange(entry.index, entry.name)
-                  }}
-                  className="w-full px-3 py-2 bg-stone-800 border border-stone-600 rounded-lg text-sm focus:outline-none focus:border-amber-500"
-                >
-                  <option value="">— Select Background —</option>
-                  <optgroup label="SRD">
-                    {srdBackgrounds.map((b) => <option key={b.index} value={b.index}>{b.name}</option>)}
-                  </optgroup>
-                  <optgroup label="Custom">
-                    <option value="__custom__">Custom (type below)</option>
-                  </optgroup>
-                </select>
-              ) : null}
-              {(srdBackgrounds.length === 0 || !srdBackgrounds.find((b) => b.name === form.backgroundName)) && (
-                <input
-                  value={form.backgroundName}
-                  onChange={(e) => setForm((f) => ({ ...f, backgroundName: e.target.value }))}
-                  className="w-full mt-1 px-3 py-2 bg-stone-800 border border-stone-600 rounded-lg text-sm focus:outline-none focus:border-amber-500"
-                  placeholder={srdBackgrounds.length > 0 ? 'Homebrew background name…' : 'Soldier'}
-                />
-              )}
-            </div>
-
-            <div>
-              <label className="block text-xs text-stone-400 mb-1">Level</label>
-              <input
-                type="number" min={1} max={20}
-                value={form.level}
-                onChange={(e) => setForm((f) => ({ ...f, level: Number(e.target.value) }))}
-                className="w-full px-3 py-2 bg-stone-800 border border-stone-600 rounded-lg text-sm focus:outline-none focus:border-amber-500"
-              />
-            </div>
-          </div>
-
-          {/* Skill proficiency choice picker (shown when class has choices) */}
-          {classSkillChoices && (
-            <div className="bg-stone-800 border border-stone-700 rounded-lg p-3">
-              <p className="text-xs text-stone-400 mb-2">
-                Class Skills: Choose {classSkillChoices.choose} from the list
-                <span className="text-stone-500 ml-1">
-                  ({classSkillChoices.options.filter((s) => skillProficiencies[s] === 'proficient').length}/{classSkillChoices.choose} chosen)
-                </span>
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {classSkillChoices.options.map((skill) => {
-                  const chosen = skillProficiencies[skill] === 'proficient'
-                  const chosenCount = classSkillChoices.options.filter((s) => skillProficiencies[s] === 'proficient').length
-                  const disabled = !chosen && chosenCount >= classSkillChoices.choose
-                  return (
-                    <button
-                      key={skill}
-                      type="button"
-                      onClick={() => toggleClassSkill(skill)}
-                      disabled={disabled}
-                      className={`text-xs px-2 py-1 rounded border transition-colors ${
-                        chosen
-                          ? 'bg-sky-500/20 border-sky-500/40 text-sky-300'
-                          : disabled
-                          ? 'border-stone-700 text-stone-600 cursor-not-allowed'
-                          : 'border-stone-600 text-stone-400 hover:text-stone-200 hover:border-stone-400'
-                      }`}
-                    >
-                      {skill.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Saving throws auto-populated from class */}
-          {Object.keys(savingThrowProficiencies).length > 0 && (
-            <div className="bg-stone-800 border border-stone-700 rounded-lg p-3">
-              <p className="text-xs text-stone-400 mb-2">Saving Throw Proficiencies (from class)</p>
-              <div className="flex flex-wrap gap-2">
-                {Object.entries(savingThrowProficiencies).filter(([, v]) => v).map(([key]) => (
-                  <span key={key} className="text-xs px-2 py-0.5 rounded bg-sky-500/20 border border-sky-500/30 text-sky-300 uppercase">
-                    {key}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Ability scores */}
-          <div>
-            <p className="text-xs text-stone-400 mb-2">Ability Scores
-              {Object.keys(appliedRaceBonuses).length > 0 && (
-                <span className="text-stone-500 ml-1">(racial bonuses applied)</span>
-              )}
-            </p>
-            <div className="grid grid-cols-6 gap-2">
-              {abilityKeys.map((key) => (
-                <div key={key} className="flex flex-col items-center gap-1">
-                  <label className="text-xs font-bold text-stone-400">{abilityLabels[key]}</label>
-                  <input
-                    type="number" min={1} max={30}
-                    value={form[key]}
-                    onChange={(e) => setForm((f) => ({ ...f, [key]: Number(e.target.value) }))}
-                    className="w-full px-1 py-1.5 bg-stone-800 border border-stone-600 rounded text-sm text-center focus:outline-none focus:border-amber-500"
-                  />
-                  <span className="text-xs text-amber-400">{abilityMod(form[key])}</span>
-                  {appliedRaceBonuses[key] ? (
-                    <span className="text-[10px] text-green-400">+{appliedRaceBonuses[key]}</span>
-                  ) : null}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* HP & Combat */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs text-stone-400 mb-1">Max HP</label>
-              <input
-                type="number" min={0}
-                value={form.maxHp}
-                onChange={(e) => {
-                  const v = Number(e.target.value)
-                  setForm((f) => ({ ...f, maxHp: v, currentHp: Math.min(f.currentHp, v) }))
-                }}
-                className="w-full px-3 py-2 bg-stone-800 border border-stone-600 rounded-lg text-sm focus:outline-none focus:border-amber-500"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-stone-400 mb-1">Current HP</label>
-              <input
-                type="number" min={0} max={form.maxHp}
-                value={form.currentHp}
-                onChange={(e) => setForm((f) => ({ ...f, currentHp: Number(e.target.value) }))}
-                className="w-full px-3 py-2 bg-stone-800 border border-stone-600 rounded-lg text-sm focus:outline-none focus:border-amber-500"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-stone-400 mb-1">Armor Class</label>
-              <input
-                type="number" min={0}
-                value={form.armorClass}
-                onChange={(e) => setForm((f) => ({ ...f, armorClass: Number(e.target.value) }))}
-                className="w-full px-3 py-2 bg-stone-800 border border-stone-600 rounded-lg text-sm focus:outline-none focus:border-amber-500"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-stone-400 mb-1">Speed (ft)</label>
-              <input
-                type="number" min={0}
-                value={form.speed}
-                onChange={(e) => setForm((f) => ({ ...f, speed: Number(e.target.value) }))}
-                className="w-full px-3 py-2 bg-stone-800 border border-stone-600 rounded-lg text-sm focus:outline-none focus:border-amber-500"
-              />
-            </div>
-          </div>
-
-          {error && <p className="text-red-400 text-sm">{error}</p>}
-
-          <div className="flex gap-2 justify-end pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-sm text-stone-400 hover:text-stone-200"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="px-5 py-2 text-sm bg-crimson-500 hover:bg-crimson-400 disabled:opacity-50 text-white font-semibold rounded-lg transition-colors"
-            >
-              {submitting ? 'Creating…' : 'Create'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  )
-}
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
@@ -497,7 +24,6 @@ export function CampaignPage() {
   const [regenLoading, setRegenLoading] = useState(false)
   const [copied, setCopied] = useState(false)
   const [removeTarget, setRemoveTarget] = useState<Member | null>(null)
-  const [showCreateChar, setShowCreateChar] = useState(false)
 
   const myRole = members.find((m) => m.userId === user?.id)?.role
   const isDM = myRole === 'dungeon_master'
@@ -565,7 +91,7 @@ export function CampaignPage() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold">Characters ({characters.length})</h2>
                 <button
-                  onClick={() => setShowCreateChar(true)}
+                  onClick={() => navigate(`/campaigns/${id}/characters/new`)}
                   className="px-3 py-1.5 text-sm bg-crimson-500 hover:bg-crimson-400 text-white font-semibold rounded-lg transition-colors"
                 >
                   + New Character
@@ -579,14 +105,23 @@ export function CampaignPage() {
                   {characters.map((ch) => (
                     <li key={ch.id}>
                       <button
-                        onClick={() => navigate(`/characters/${ch.id}`)}
+                        onClick={() =>
+                          ch.status === 'draft'
+                            ? navigate(`/campaigns/${id}/characters/new?draft=${ch.id}`)
+                            : navigate(`/characters/${ch.id}`)
+                        }
                         className="w-full flex items-center gap-4 p-3 bg-stone-800 hover:bg-stone-700 rounded-lg transition-colors text-left"
                       >
                         <div className="w-10 h-10 rounded-full bg-stone-700 flex items-center justify-center text-sm font-bold text-amber-400 flex-shrink-0">
                           {ch.level}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm">{ch.name}</p>
+                          <p className="font-medium text-sm flex items-center gap-2">
+                            {ch.name}
+                            {ch.status === 'draft' && (
+                              <span className="text-xs px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">Draft</span>
+                            )}
+                          </p>
                           <p className="text-xs text-stone-400">{ch.className} · {ch.raceName}</p>
                           <div className="mt-1 flex items-center gap-2">
                             <div className="flex-1 h-1.5 bg-stone-600 rounded-full overflow-hidden">
@@ -813,18 +348,6 @@ export function CampaignPage() {
             </div>
           </div>
         </div>
-      )}
-
-      {/* Create character modal */}
-      {showCreateChar && id && (
-        <CreateCharForm
-          campaignId={id}
-          onCreated={(char) => {
-            setCharacters((prev) => [...prev, char])
-            setShowCreateChar(false)
-          }}
-          onClose={() => setShowCreateChar(false)}
-        />
       )}
     </div>
   )

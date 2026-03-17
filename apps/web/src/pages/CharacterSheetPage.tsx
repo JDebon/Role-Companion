@@ -699,6 +699,9 @@ export function CharacterSheetPage() {
           <h1 className="text-xl font-bold text-amber-400">{char.name}</h1>
           <p className="text-sm text-stone-400">
             {char.className} · {char.raceName} · Level {char.level}
+            {char.status === 'draft' && (
+              <span className="ml-2 text-xs px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">Draft</span>
+            )}
           </p>
         </div>
       </header>
