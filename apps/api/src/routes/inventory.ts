@@ -97,6 +97,12 @@ async function buildInventoryResponse(characterId: string, strScore: number) {
     let weight: number | null = null
     let cost: string | null = null
     let srdIndex: string | null = null
+    let weaponDamage: string | null = null
+    let weaponDamageType: string | null = null
+    let weaponRange: string | null = null
+    let armorBaseAc: number | null = null
+    let armorDexBonus: boolean | null = null
+    let equipmentCategory: string | null = null
 
     if (row.srdEquipmentIndex) {
       const eq = equipMap.get(row.srdEquipmentIndex)
@@ -107,6 +113,25 @@ async function buildInventoryResponse(characterId: string, strScore: number) {
         const w = (eq.data.weight as number | undefined)
         weight = typeof w === 'number' ? w : null
         cost = formatCost(eq.data)
+
+        // Extract weapon stats
+        const damage = eq.data.damage as { damage_dice?: string; damage_type?: { name: string } } | undefined
+        if (damage?.damage_dice) weaponDamage = damage.damage_dice
+        if (damage?.damage_type?.name) weaponDamageType = damage.damage_type.name
+        const range = eq.data.weapon_range as string | undefined
+        if (range) weaponRange = range
+
+        // Extract armor stats
+        const ac = eq.data.armor_class as { base?: number; dex_bonus?: boolean } | undefined
+        if (ac?.base !== undefined) {
+          armorBaseAc = ac.base
+          armorDexBonus = ac.dex_bonus ?? false
+        }
+
+        equipmentCategory = eq.data.equipment_category as string | null ?? null
+        if (typeof equipmentCategory === 'object' && equipmentCategory !== null) {
+          equipmentCategory = (equipmentCategory as { name?: string }).name ?? null
+        }
       }
     } else if (row.srdMagicItemIndex) {
       const mi = magicMap.get(row.srdMagicItemIndex)
@@ -131,6 +156,12 @@ async function buildInventoryResponse(characterId: string, strScore: number) {
       cost,
       notes: row.notes,
       customDescription: source === 'custom' ? row.customDescription : undefined,
+      weaponDamage,
+      weaponDamageType,
+      weaponRange,
+      armorBaseAc,
+      armorDexBonus,
+      equipmentCategory,
     }
   })
 

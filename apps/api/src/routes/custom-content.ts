@@ -9,6 +9,9 @@ import {
   srdMonsters,
   srdEquipment,
   srdMagicItems,
+  srdClasses,
+  srdRaces,
+  srdBackgrounds,
 } from '@rolecompanion/db'
 import { authMiddleware } from '../lib/auth-middleware.js'
 import { errorResponse } from '../lib/errors.js'
@@ -55,9 +58,12 @@ export const ruleDataSchema = z.object({
 }).passthrough()
 
 export function validateEntityData(
-  entityType: 'monster' | 'item' | 'rule',
+  entityType: 'monster' | 'item' | 'rule' | 'class' | 'race' | 'background',
   data: unknown
 ): { success: true; data: Record<string, unknown> } | { success: false; error: string } {
+  if (entityType === 'class' || entityType === 'race' || entityType === 'background') {
+    return { success: true, data: (data ?? {}) as Record<string, unknown> }
+  }
   const schema = entityType === 'monster' ? monsterDataSchema
     : entityType === 'item' ? itemDataSchema
     : ruleDataSchema
@@ -98,9 +104,21 @@ export function deepMerge(
 // ── SRD lookup ────────────────────────────────────────────────────────────────
 
 async function lookupSrdBase(
-  entityType: 'monster' | 'item' | 'rule',
+  entityType: 'monster' | 'item' | 'rule' | 'class' | 'race' | 'background',
   baseIndex: string
 ): Promise<Record<string, unknown> | null> {
+  if (entityType === 'class') {
+    const [row] = await db.select({ data: srdClasses.data }).from(srdClasses).where(eq(srdClasses.index, baseIndex)).limit(1)
+    return row ? (row.data as Record<string, unknown>) : null
+  }
+  if (entityType === 'race') {
+    const [row] = await db.select({ data: srdRaces.data }).from(srdRaces).where(eq(srdRaces.index, baseIndex)).limit(1)
+    return row ? (row.data as Record<string, unknown>) : null
+  }
+  if (entityType === 'background') {
+    const [row] = await db.select({ data: srdBackgrounds.data }).from(srdBackgrounds).where(eq(srdBackgrounds.index, baseIndex)).limit(1)
+    return row ? (row.data as Record<string, unknown>) : null
+  }
   if (entityType === 'monster') {
     const [row] = await db
       .select({ data: srdMonsters.data })
@@ -145,7 +163,7 @@ export const customContentRouter = new Hono<{ Variables: Variables }>()
 customContentRouter.use('*', authMiddleware)
 
 const createSchema = z.object({
-  entityType: z.enum(['monster', 'item', 'rule']),
+  entityType: z.enum(['monster', 'item', 'rule', 'class', 'race', 'background']),
   name: z.string().min(1).max(200),
   baseIndex: z.string().min(1).nullable().optional(),
   data: z.record(z.unknown()),
@@ -229,7 +247,7 @@ customContentRouter.post('/:id/custom-content', zValidator('json', createSchema)
     if (body.entityType === 'rule') {
       return errorResponse(c, 400, 'VALIDATION_ERROR')
     }
-    const baseData = await lookupSrdBase(body.entityType, body.baseIndex)
+    const baseData = await lookupSrdBase(body.entityType as 'monster' | 'item' | 'class' | 'race' | 'background', body.baseIndex)
     if (!baseData) return errorResponse(c, 404, 'BASE_NOT_FOUND')
     entityData = deepMerge(baseData, body.data)
   }

@@ -119,6 +119,7 @@ export interface CharacterSummary {
   currentHp: number
   maxHp: number
   userId: string
+  status: 'draft' | 'complete'
 }
 
 export interface AbilityScore {
@@ -156,8 +157,10 @@ export interface CharacterSheet {
   skills: Record<string, SkillEntry>
   savingThrows: Record<string, SavingThrowEntry>
   traits: string[]
+  conditions: string[]
   backstory: string | null
   portraitUrl: string | null
+  status: 'draft' | 'complete'
 }
 
 export interface CreateCharacterInput {
@@ -181,6 +184,7 @@ export interface CreateCharacterInput {
   savingThrowProficiencies?: Record<string, boolean>
   traits?: string[]
   backstory?: string
+  status?: 'draft' | 'complete'
 }
 
 export function getCampaignCharacters(campaignId: string): Promise<CharacterSummary[]> {
@@ -198,7 +202,7 @@ export function getCharacter(characterId: string): Promise<CharacterSheet> {
   return request(`/characters/${characterId}`)
 }
 
-export function patchCharacter(characterId: string, data: Partial<CreateCharacterInput & { currentHp: number; maxHp: number; temporaryHp: number }>): Promise<CharacterSheet> {
+export function patchCharacter(characterId: string, data: Partial<CreateCharacterInput & { currentHp: number; maxHp: number; temporaryHp: number; conditions: string[]; status: 'draft' | 'complete' }>): Promise<CharacterSheet> {
   return request(`/characters/${characterId}`, {
     method: 'PATCH',
     body: JSON.stringify(data),
@@ -223,6 +227,12 @@ export interface InventoryItem {
   cost: string | null
   notes: string | null
   customDescription?: string
+  weaponDamage: string | null
+  weaponDamageType: string | null
+  weaponRange: string | null
+  armorBaseAc: number | null
+  armorDexBonus: boolean | null
+  equipmentCategory: string | null
 }
 
 export interface Currency {
@@ -379,7 +389,7 @@ export function putConcentration(
 
 // ── Custom Content ────────────────────────────────────────────────────────────
 
-export type EntityType = 'monster' | 'item' | 'rule'
+export type EntityType = 'monster' | 'item' | 'rule' | 'class' | 'race' | 'background'
 
 export interface CustomEntitySummary {
   id: string
@@ -802,4 +812,71 @@ export function patchLoreDocument(
 
 export function deleteLoreDocument(campaignId: string, docId: string): Promise<void> {
   return request(`/campaigns/${campaignId}/lore/${docId}`, { method: 'DELETE' })
+}
+
+// ── Character Options ──────────────────────────────────────────────────────
+
+export interface CharacterOptionsResponse {
+  srd: Array<{ index: string; name: string }>
+  custom: Array<{ id: string; name: string; baseIndex: string | null }>
+}
+
+export function getCharacterOptions(
+  campaignId: string,
+  type: 'class' | 'race' | 'background'
+): Promise<CharacterOptionsResponse> {
+  return request(`/campaigns/${campaignId}/character-options?type=${type}`)
+}
+
+// ── Compendium ────────────────────────────────────────────────────────────────
+
+export interface CompendiumEntry {
+  index: string
+  name: string
+}
+
+export interface SrdClassDetail {
+  index: string
+  name: string
+  data: {
+    hit_die?: number
+    saving_throws?: Array<{ index: string; name: string }>
+    proficiency_choices?: Array<{
+      choose: number
+      from: { options: Array<{ item: { index: string; name?: string } }> }
+    }>
+  }
+}
+
+export interface SrdRaceDetail {
+  index: string
+  name: string
+  data: {
+    speed?: number
+    ability_bonuses?: Array<{ ability_score: { index: string; name: string }; bonus: number }>
+  }
+}
+
+export interface SrdBackgroundDetail {
+  index: string
+  name: string
+  data: {
+    starting_proficiencies?: Array<{ index: string; name: string }>
+  }
+}
+
+export function getCompendiumList(collection: string, limit = 100): Promise<{ data: CompendiumEntry[]; total: number }> {
+  return request(`/compendium/${collection}?limit=${limit}`)
+}
+
+export function getCompendiumClassDetail(index: string): Promise<SrdClassDetail> {
+  return request(`/compendium/classes/${index}`)
+}
+
+export function getCompendiumRaceDetail(index: string): Promise<SrdRaceDetail> {
+  return request(`/compendium/races/${index}`)
+}
+
+export function getCompendiumBackgroundDetail(index: string): Promise<SrdBackgroundDetail> {
+  return request(`/compendium/backgrounds/${index}`)
 }

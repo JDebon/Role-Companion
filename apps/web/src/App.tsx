@@ -11,6 +11,7 @@ import { NpcPage } from './pages/NpcPage'
 import { SessionLogPage } from './pages/SessionLogPage'
 import { DmNotesPage } from './pages/DmNotesPage'
 import { LorePage } from './pages/LorePage'
+import { CharacterCreationPage } from './pages/CharacterCreationPage'
 import { ProtectedRoute } from './components/ProtectedRoute'
 
 export default function App() {
@@ -95,6 +96,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <CharacterSheetPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/campaigns/:id/characters/new"
+        element={
+          <ProtectedRoute>
+            <CharacterCreationPage />
           </ProtectedRoute>
         }
       />

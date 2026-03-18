@@ -13,7 +13,7 @@ import {
   real,
 } from 'drizzle-orm/pg-core'
 
-export const entityTypeEnum = pgEnum('entity_type', ['monster', 'item', 'rule'])
+export const entityTypeEnum = pgEnum('entity_type', ['monster', 'item', 'rule', 'class', 'race', 'background'])
 
 export const spellStatusEnum = pgEnum('spell_status', ['known', 'prepared'])
 
@@ -89,6 +89,8 @@ export const characters = pgTable('characters', {
   backstory: text('backstory'),
   portraitUrl: varchar('portrait_url', { length: 500 }),
   traits: jsonb('traits').notNull().$type<string[]>().default([]),
+  conditions: jsonb('conditions').notNull().$type<string[]>().default([]),
+  status: text('status').notNull().default('complete'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })

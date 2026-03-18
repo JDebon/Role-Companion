@@ -180,6 +180,45 @@ router.get('/equipment/:index', async (c) => {
   return c.json(row.data)
 })
 
+// ── GET /compendium/classes/:index ────────────────────────────────────────────
+
+router.get('/classes/:index', async (c) => {
+  const index = c.req.param('index')
+  const [row] = await db
+    .select({ index: srdClasses.index, name: srdClasses.name, data: srdClasses.data })
+    .from(srdClasses)
+    .where(eq(srdClasses.index, index))
+    .limit(1)
+  if (!row) return errorResponse(c, 404, 'NOT_FOUND')
+  return c.json(row)
+})
+
+// ── GET /compendium/races/:index ──────────────────────────────────────────────
+
+router.get('/races/:index', async (c) => {
+  const index = c.req.param('index')
+  const [row] = await db
+    .select({ index: srdRaces.index, name: srdRaces.name, data: srdRaces.data })
+    .from(srdRaces)
+    .where(eq(srdRaces.index, index))
+    .limit(1)
+  if (!row) return errorResponse(c, 404, 'NOT_FOUND')
+  return c.json(row)
+})
+
+// ── GET /compendium/backgrounds/:index ────────────────────────────────────────
+
+router.get('/backgrounds/:index', async (c) => {
+  const index = c.req.param('index')
+  const [row] = await db
+    .select({ index: srdBackgrounds.index, name: srdBackgrounds.name, data: srdBackgrounds.data })
+    .from(srdBackgrounds)
+    .where(eq(srdBackgrounds.index, index))
+    .limit(1)
+  if (!row) return errorResponse(c, 404, 'NOT_FOUND')
+  return c.json(row)
+})
+
 // ── GET /compendium/:collection ───────────────────────────────────────────────
 
 const genericCollections = {

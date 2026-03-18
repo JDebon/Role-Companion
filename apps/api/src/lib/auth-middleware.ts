@@ -15,12 +15,13 @@ export const authMiddleware = createMiddleware<{ Variables: AuthVariables }>(
       return errorResponse(c, 401, 'UNAUTHORIZED')
     }
 
+    let payload: JwtPayload
     try {
-      const payload = verifyToken(token)
-      c.set('user', payload)
-      await next()
+      payload = verifyToken(token)
     } catch {
       return errorResponse(c, 401, 'UNAUTHORIZED')
     }
+    c.set('user', payload)
+    await next()
   }
 )

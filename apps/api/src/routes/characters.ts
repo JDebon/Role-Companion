@@ -1,8 +1,11 @@
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
-import { eq, and } from 'drizzle-orm'
-import { db, characters, campaignMembers } from '@rolecompanion/db'
+import { eq, and, or } from 'drizzle-orm'
+import {
+  db, characters, campaignMembers,
+  srdClasses, srdRaces, srdBackgrounds, customEntities,
+} from '@rolecompanion/db'
 import { authMiddleware } from '../lib/auth-middleware.js'
 import { errorResponse } from '../lib/errors.js'
 import {
@@ -51,7 +54,7 @@ const createSchema = z
     className: z.string().min(1).max(100),
     subclassName: z.string().max(100).nullable().optional(),
     raceName: z.string().min(1).max(100),
-    backgroundName: z.string().min(1).max(100).optional().default(''),
+    backgroundName: z.string().max(100).optional().default(''),
     level: z.number().int().min(1).max(20).optional().default(1),
     experiencePoints: z.number().int().min(0).optional().default(0),
     str: abilityScore.optional().default(10),
@@ -76,6 +79,7 @@ const createSchema = z
       .nullable()
       .optional(),
     traits: z.array(z.string()).optional().default([]),
+    status: z.enum(['draft', 'complete']).optional().default('complete'),
   })
   .refine((d) => d.currentHp <= d.maxHp, {
     message: 'currentHp cannot exceed maxHp',
@@ -112,6 +116,8 @@ const patchSchema = z.object({
     .nullable()
     .optional(),
   traits: z.array(z.string()).optional(),
+  conditions: z.array(z.string()).optional(),
+  status: z.enum(['draft', 'complete']).optional(),
 })
 
 // ── Campaign-scoped router (mount at /api/v1/campaigns) ──────────────────────
@@ -127,10 +133,19 @@ campaignCharactersRouter.get('/:id/characters', async (c) => {
   const member = await getMembership(campaignId, userId)
   if (!member) return errorResponse(c, 404, 'NOT_FOUND')
 
-  const rows = await db
-    .select()
-    .from(characters)
-    .where(eq(characters.campaignId, campaignId))
+  const isDM = member.role === 'dungeon_master'
+
+  const rows = isDM
+    ? await db.select().from(characters).where(eq(characters.campaignId, campaignId))
+    : await db
+        .select()
+        .from(characters)
+        .where(
+          and(
+            eq(characters.campaignId, campaignId),
+            or(eq(characters.status, 'complete'), eq(characters.userId, userId))
+          )
+        )
 
   return c.json(
     rows.map((ch) => ({
@@ -142,8 +157,44 @@ campaignCharactersRouter.get('/:id/characters', async (c) => {
       currentHp: ch.currentHp,
       maxHp: ch.maxHp,
       userId: ch.userId,
+      status: ch.status,
     }))
   )
+})
+
+// GET /campaigns/:id/character-options?type=class|race|background
+campaignCharactersRouter.get('/:id/character-options', async (c) => {
+  const campaignId = c.req.param('id')
+  const { sub: userId } = c.get('user')
+  const type = c.req.query('type')
+
+  if (!type || !['class', 'race', 'background'].includes(type)) {
+    return errorResponse(c, 400, 'VALIDATION_ERROR', { type: 'Must be class, race, or background' })
+  }
+
+  const member = await getMembership(campaignId, userId)
+  if (!member) return errorResponse(c, 404, 'NOT_FOUND')
+
+  const srdTable =
+    type === 'class' ? srdClasses : type === 'race' ? srdRaces : srdBackgrounds
+
+  const [srdRows, customRows] = await Promise.all([
+    db
+      .select({ index: srdTable.index, name: srdTable.name })
+      .from(srdTable)
+      .orderBy(srdTable.name),
+    db
+      .select({ id: customEntities.id, name: customEntities.name, baseIndex: customEntities.baseIndex })
+      .from(customEntities)
+      .where(
+        and(
+          eq(customEntities.campaignId, campaignId),
+          eq(customEntities.entityType, type as 'class' | 'race' | 'background')
+        )
+      ),
+  ])
+
+  return c.json({ srd: srdRows, custom: customRows })
 })
 
 // POST /campaigns/:id/characters
@@ -162,7 +213,6 @@ campaignCharactersRouter.post(
       ...defaultSkillProficiencies(),
       ...(data.skillProficiencies ?? {}),
     }
-    // Sanitize: only keep known skills
     for (const key of Object.keys(skillProf)) {
       if (!SKILLS[key]) delete skillProf[key]
     }
@@ -171,7 +221,6 @@ campaignCharactersRouter.post(
       ...defaultSavingThrowProficiencies(),
       ...(data.savingThrowProficiencies ?? {}),
     }
-    // Sanitize: only keep known abilities
     for (const key of Object.keys(savingThrowProf)) {
       if (!ABILITIES.includes(key as typeof ABILITIES[number])) delete savingThrowProf[key]
     }
@@ -205,6 +254,7 @@ campaignCharactersRouter.post(
         backstory: data.backstory ?? null,
         portraitUrl: data.portraitUrl ?? null,
         traits: data.traits,
+        status: data.status,
       })
       .returning()
 
@@ -222,8 +272,14 @@ charactersRouter.get('/:id', async (c) => {
   const characterId = c.req.param('id')
   const { sub: userId } = c.get('user')
 
-  const { char } = await getCharacterWithMemberCheck(characterId, userId)
-  if (!char) return errorResponse(c, 404, 'NOT_FOUND')
+  const { char, member } = await getCharacterWithMemberCheck(characterId, userId)
+  if (!char || !member) return errorResponse(c, 404, 'NOT_FOUND')
+
+  // Draft characters are only visible to their owner or the DM
+  const isDM = member.role === 'dungeon_master'
+  if (char.status === 'draft' && char.userId !== userId && !isDM) {
+    return errorResponse(c, 404, 'NOT_FOUND')
+  }
 
   return c.json(buildFullSheet(char))
 })
@@ -234,10 +290,18 @@ charactersRouter.patch('/:id', zValidator('json', patchSchema), async (c) => {
   const { sub: userId } = c.get('user')
   const patch = c.req.valid('json')
 
-  const { char } = await getCharacterWithMemberCheck(characterId, userId)
-  if (!char) return errorResponse(c, 404, 'NOT_FOUND')
+  const { char, member } = await getCharacterWithMemberCheck(characterId, userId)
+  if (!char || !member) return errorResponse(c, 404, 'NOT_FOUND')
 
-  if (char.userId !== userId) return errorResponse(c, 403, 'FORBIDDEN')
+  const isOwner = char.userId === userId
+  const isDM = member.role === 'dungeon_master'
+
+  if (!isOwner && !isDM) return errorResponse(c, 403, 'FORBIDDEN')
+
+  // Status transition guard: only DM can revert complete → draft
+  if (patch.status === 'draft' && char.status === 'complete' && !isDM) {
+    return errorResponse(c, 400, 'VALIDATION_ERROR', { status: 'Cannot revert a completed character to draft' })
+  }
 
   // Validate HP bounds after merge
   const newMaxHp = patch.maxHp ?? char.maxHp
@@ -259,7 +323,7 @@ charactersRouter.patch('/:id', zValidator('json', patchSchema), async (c) => {
     'name', 'className', 'subclassName', 'raceName', 'backgroundName',
     'level', 'experiencePoints', 'str', 'dex', 'con', 'int', 'wis', 'cha',
     'maxHp', 'currentHp', 'temporaryHp', 'armorClass', 'initiative', 'speed',
-    'backstory', 'portraitUrl', 'traits',
+    'backstory', 'portraitUrl', 'traits', 'conditions', 'status',
   ] as const
   for (const key of scalar) {
     if (key in patch && patch[key] !== undefined) {
